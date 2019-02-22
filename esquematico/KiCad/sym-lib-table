@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name Contador_Geiger-rescue)(type Legacy)(uri ${KIPRJMOD}/Contador_Geiger-rescue.lib)(options "")(descr ""))
+)

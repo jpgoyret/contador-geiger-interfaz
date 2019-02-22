@@ -1,0 +1,38 @@
+En el siguiente archivo se listan las funciones de cada registro (R0-R31)
+dentro del proyecto:
+
+R0 - Operaciones de multiplicacion
+R1 - Operaciones de multiplicacion
+R2 - Reservado: Contador del timer 0
+R3 - Reservado: Contador del timer 0
+R4 - De uso general
+R5 - De uso general
+R6 - De uso general
+R7 - De uso general
+R8 - Reservado: Puntero al buffer de recepcion de UART (LSB)
+R9 - Reservado: Puntero al buffer de recepcion de UART (MSB)
+R10 - Reservado: Puntero al buffer de transmision de UART (LSB)
+R11 - Reservado: Puntero al buffer de transmision de UART (MSB)
+R12 - Reservado: Cantidad de caracteres almacenados en el buffer de transmision de datos de UART (BYTES_TRANSMITIR)
+R13 - Reservado: Cantidad de caracteres almacenados en el buffer de recepcion de datos de UART (BYTES_RECIBIDOS)
+R14 - De uso general
+R15 - Reservado: multiplicador para externder el tamano de la ventana de tiempo de las mediciones (MUL_DE_VENTANA)
+R16 - De uso general
+R17 - De uso general
+R18 - De uso general
+R19 - De uso general
+R20 - De uso general
+R21 - De uso general
+R22 - Reservado: 
+R23 - De uso general 
+R24 - Reservado: almacenamiento de los estados de las maquinas de estado (ESTADO)
+R25 - Reservado: almacenamiento de eventos que alteran los estados de las maquinas de estado (EVENTO)
+R26 - Puntero X
+R27 - Puntero X
+R28 - Puntero Y
+R29 - Puntero Y
+R30 - Puntero Z
+R31 - Puntero Z
+
+Por "uso general" se entiende que el registro no debe guardar un valor
+que haga de "memoria" de una variable entre distintas ejecuciones de una tarea/funcion/subrutina
