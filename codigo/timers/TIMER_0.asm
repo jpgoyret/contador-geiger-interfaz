@@ -1,24 +1,54 @@
-; timers.asm
-; Created: 24/10/2018 9:16
-; Author : Juan Pablo Goyret
+; ==================================================================
+; Archivo: TIMER_0.asm
 ; Descripcion: biblioteca con funciones para manejo del timer 0
 
-; Utilidad del timer 0: identificar un timeout (o exceso de tiempo)
+; Usos del timer 0:
+; 1) Identificar un timeout (o exceso de tiempo)
 ; en la recepcion de una cadena de caracteres por UART.
 ; Este genera una interrupcion si ha transcurrido un cierto tiempo
 ; desde la llegada de un primer caracter sin que se haya recibido un
 ; caracter de fin de trama
+;
+; 2) Debouncer para detectar la pulsación de una tecla en el teclado 
+;    mediante el comparador y el ADC
+;
+; ==================================================================
+
+
+; ====================== REGISTROS TIMER 0 =========================
+; REGISTRO TCCR0B:
+; [FOC0A][FOC0B][-][-][WGM02][CS02][CS01][CS00]
+
+;CS12|CS11|CS10: Definen el prescaler del timer 0.
+;000 -> Timer apagado
+;001 -> Encendido, sin prescaler
+;010 -> clk/8
+;011 -> clk/64
+;100 -> clk/256
+;101 -> clk/1024
+;110 -> Se utiliza para configurar un clock externo, por el pin CONT_TIMER0_HIGH
+;111 -> Idem 110
+
+;**************************************************************
+; REGISTRO TIMSK0:
+; [-][-][-][-][-][OCIEB][OCIEA][TOIE]
+
+; TOIE1: Si se setea, se habilita la interrupción por overflow del TIMER0.
+
+;**************************************************************
+; REGISTRO TCNT0: almacena el valor del timer.
+
+; ====================== FIN REGISTROS TIMER 0 ======================
+
 
 ; ===================================================================
 ; ==================== Variables auxiliares ==========================
 ; ===================================================================
-.UNDEF T0
-.UNDEF T1
 ; R2 Y R3 deben ser reservados para el timer dado que son contadores 
 ; de la cantidad de overflows que se produjeron hasta un determinado
 ; instante en el tiempo
-.DEF T0 = R2
-.DEF T1 = R3
+.DEF CONT_TIMER0_LOW = R2
+.DEF CONT_TIMER0_HIGH = R3
 
 ; ===================================================================
 ; ==================== Registros en RAM =============================
@@ -47,7 +77,7 @@ MOTIVO_TIMER0: .BYTE 1
 
 ; Numero de ocurrencias de overflow del timer0 que tiene que ocurrir
 ; para que se produzca un timeout
-.equ TIMEOUT_T0_UMBRAL = 130
+.equ TIMEOUT_CONT_TIMER0_LOW_UMBRAL = 130
 ; Con el prescaler configurado en 64, transcurren aproximadamente 62ms
 ; desde la recepcion del primer caracter hasta el timeout.
 ; Dado que para un buffer de 60 caracteres con transmision serie
@@ -61,9 +91,11 @@ MOTIVO_TIMER0: .BYTE 1
 ; ==================== Interrupciones ===============================
 ; ===================================================================
 
-; Timer/Counter0 Overflow
+; Interrupcion: Timer/Counter0 Overflow
 ; Descripcion: se dispara cuando el timer0 ha superado 0xFF y se ha
-; limpiado
+; limpiado.
+; Recibe: -
+; Devuelve: -
 OVERFLOW_TIMER0:
 
 	PUSH R16
@@ -71,16 +103,16 @@ OVERFLOW_TIMER0:
 	PUSH R16	; salva en la pila el estado actual de los flags (C, N, V y Z)
 
 	LDI R16, 1
-	ADD T0, R16
+	ADD CONT_TIMER0_LOW, R16
 	LDI R16, 0
-	ADC T1, R16
+	ADC CONT_TIMER0_HIGH, R16
 
-	LDI R16, HIGH(TIMEOUT_T0_UMBRAL)
-	CP T1, R16
+	LDI R16, HIGH(TIMEOUT_CONT_TIMER0_LOW_UMBRAL)
+	CP CONT_TIMER0_HIGH, R16
 	BRNE _RETORNAR_OVERFLOW_TIMER0
 
-	LDI R16, LOW(TIMEOUT_T0_UMBRAL)
-	CP T0, R16
+	LDI R16, LOW(TIMEOUT_CONT_TIMER0_LOW_UMBRAL)
+	CP CONT_TIMER0_LOW, R16
 	BRNE _RETORNAR_OVERFLOW_TIMER0
 
 	; Analizar el motivo por el cual se llamo al timer0 en un principio
@@ -144,7 +176,7 @@ _RETORNAR_OVERFLOW_TIMER0:
 ; ===================================================================
 
 ; Descripcion: encender timer0 con una configuracion determinada de clock
-; Entradas: ninguna
+; Recibe: -
 ; Devuelve: -
 ENCENDER_TIMER_0:
 	; Configurar velocidad de funcionamiento del timer
@@ -153,12 +185,12 @@ ENCENDER_TIMER_0:
 
 ; ================================================
 ; Descripcion: apaga timer0
-; Entradas: ninguna
+; Recibe: *
 ; Devuelve: -
 APAGAR_TIMER_0:
 	; Limpiar los contadores de overflow
-	CLR T0
-	CLR T1
+	CLR CONT_TIMER0_LOW
+	CLR CONT_TIMER0_HIGH
 	; Resetear el contador del timer
 	WRITE_REG TCNT0, 0 ; TODO: ver si es necesario hacer esto siempre
 	WRITE_REG TCCR0B,  0
@@ -167,7 +199,7 @@ APAGAR_TIMER_0:
 
 ; ================================================
 ; Descripcion: activar interrupcion por overflow
-; Entradas: ninguna
+; Recibe: -
 ; Devuelve: -
 ACTIVAR_ISR_TIMER0_OV:
 	SET_BIT TIMSK0, TOIE0
@@ -175,7 +207,7 @@ ACTIVAR_ISR_TIMER0_OV:
 
 ; ================================================
 ; Descripcion: desactivar interrupcion por overflow
-; Entradas: ninguna
+; Recibe: -
 ; Devuelve: -
 DESACTIVAR_ISR_TIMER0_OV:
 	CLEAR_BIT TIMSK0, TOIE0
@@ -184,10 +216,10 @@ DESACTIVAR_ISR_TIMER0_OV:
 
 ; ============================================================================
 ; Descripcion: indica si el teclado se encuentra en uso verificando si el timer
-; se encuentra encendido por ese motivo
-; Entradas: ninguna
+; se encuentra encendido por ese motivo.
+; Recibe: -
 ; Devuelve: bit de carry en 1 si el teclado se encuentra en uso o 0 en caso
-; contrario
+; contrario.
 CHEQUEAR_TECLADO_EN_USO:
 	LDS R16, MOTIVO_TIMER0
 
@@ -202,10 +234,10 @@ CHEQUEAR_TECLADO_EN_USO:
 	RET
 
 ; ============================================================================
-; Descripcion: indica si el timer 0 se encuentra en uso por la uart
-; Entradas: ninguna
+; Descripcion: indica si el timer 0 se encuentra en uso por la uart.
+; Recibe: -
 ; Devuelve: bit de carry en 1 si el teclado se encuentra en uso o 0 en caso
-; contrario
+; contrario.
 CHEQUEAR_UART_EN_USO:
 	LDS R16, MOTIVO_TIMER0
 	

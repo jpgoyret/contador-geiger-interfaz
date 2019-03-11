@@ -1,7 +1,18 @@
+; ==================================================================
+; Archivo: eeprom.asm
 ; Descripcion: funciones relacionadas con el uso de la memoria EEPROM
+
+; Usos de la memoria EEPROM:
+; 1) Guardar los registros de configuracion del contador Geiger en
+;    en memoria para reconfigurar el dispositivo con dichos valores
+;    en caso de reiniciarse
+;
+; ==================================================================
+
 .undef T0
 .def T0 = R16
 
+; ==================================================================
 ; Decripcion: almacena en memoria RAM la ultima configuracion del dispositivo
 ; Recibe: registros de configuracion
 ; Devuelve: -
@@ -42,6 +53,7 @@ GUARDAR_CONFIGURACION_EEMPROM:
 
 	RET
 
+; ==================================================================
 ; Descripcion: guarda un byte en memoria EEPROM
 ; Recibe: 
 ; -> R17: LSB de la direccion de memoria
@@ -70,6 +82,7 @@ _BUCLE_GUARDAR_REGISTRO_EEPROM:
 
 	RET
 
+; ==================================================================
 ; Decripcion: configura el dispositivo (mediante registros en RAM) a partir
 ; de la ultima configuracion almacenada en EEPROM
 ; Recibe: registros de configuracion
@@ -111,7 +124,7 @@ CARGAR_CONFIGURACION_EEPROM:
 
 	RET
 
-
+; ==================================================================
 ; Decripcion: devuelve el dato almacenado en un registro de memoria EEPROM
 ; Recibe: 
 ; -> R17: LSB de la direccion de memoria

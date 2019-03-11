@@ -1,8 +1,24 @@
-; timers.asm
-; Created: 24/10/2018 9:16
-; Author : Juan Pablo Goyret
-; Descripcion: biblioteca con macros utiles
+; ==================================================================
+; Archivo: macros.asm
+; Descripcion: biblioteca con macros de uso general y de debugging
+; ==================================================================
 
+; ===================================================================
+; ==================== Macros de uso general ========================
+; ===================================================================
+
+; Descripcion: hacer una resta de una palabra de 16 bits
+; WORD = [@1:@0]
+.MACRO DEC_WORD			
+	DEC @0							;Decremento NIBBLE BAJO
+
+	CPI @0, 0xFF					;Si hizo overflow, entonces debo restar el nibble alto
+	BRNE FIN_DEC_WORD				;Si no hizo overflow, entonces no debo restar nada más
+
+	DEC @1
+
+FIN_DEC_WORD:
+.ENDMACRO
 
 ; Descripcion: limpia el bit @1 en el resistro @0
 .MACRO CLEAR_BIT
@@ -19,6 +35,7 @@
 .endif
 .ENDMACRO
 
+; ============================================================
 ; Descripcion: activa el bit @1 en el resistro @0
 .MACRO SET_BIT
 .if	@0<0x40
@@ -34,6 +51,7 @@
 .endif
 .ENDMACRO
 
+; ============================================================
 ; Descripcion: pone todo el registro @0 en cero
 ; salvo por el bit @1
 .MACRO WRITE_REG
@@ -45,18 +63,21 @@
 .endif
 .ENDMACRO
 
+; ============================================================
 ; Descripcion: hace un push al stack de dos registros @0 y @1
 .MACRO PUSH_WORD
 	PUSH @0
 	PUSH @1
 .ENDMACRO
 
+; ============================================================
 ; Descripcion: hace un pop del stack de dos registros @0 y @1
 .MACRO POP_WORD
 	POP @1
 	POP @0
 .ENDMACRO
 
+; ============================================================
 ; Descripcion: sumar dos registros de 16 bits
 ; Parametros: @0 (MSB del primer registro)
 ;             @1 (LSB del primer registro)
@@ -68,6 +89,7 @@
 .ENDMACRO
 
 
+; ============================================================
 ; Descripcion: sumar dos registros de 24 bits
 ; Parametros: @0 (MSB del primer registro)
 ;             @1 (byte intermedio del primer registro)
@@ -99,7 +121,7 @@
 	POP R16
 .ENDMACRO
 
-
+; ============================================================
 ; Descripcion: encender LED del Arduino
 .MACRO ENCENDER_LED_ARDUINO
 	PUSH R16
@@ -111,6 +133,7 @@
 	POP R16
 .ENDMACRO
 
+; ============================================================
 ; Descripcion: encender LED del Arduino
 .MACRO APAGAR_LED_ARDUINO
 	PUSH R16
@@ -122,6 +145,7 @@
 	POP R16
 .ENDMACRO
 
+; ============================================================
 ; Descripcion: configurar pin del Arduino que posee un LED conectado
 ; para encenderlo a gusto
 .MACRO CONF_LED_ARDUINO

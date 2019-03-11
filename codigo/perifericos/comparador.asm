@@ -1,4 +1,7 @@
-; Descripcion: funciones para configurar el comparador
+; ==================================================================
+; Archivo: comparador.asm
+; Descripcion: biblioteca con funciones para configurar el comparador
+; ==================================================================
 
 ; ===================================================================
 ; ========================= Funciones ===============================
@@ -8,8 +11,6 @@
 ; Recibe: -
 ; Devuelve: -
 CONF_COMPARADOR:
-
-	CONF_LED_ARDUINO ; TODO: ES UNA LINEA DE PRUEBA. REMOVER
 
 	; Activar multiplexor para elegir el puerto negativo del comparador
 	SET_BIT ADCSRB, ACME
@@ -36,7 +37,12 @@ CONF_COMPARADOR:
 
 	RET
 
-; Descripcion: interrupcion del comparador
+
+; ===================================================================
+; Interrupcion: comparador analogico
+; Descripcion: se dispara al presionar una tecla
+; Recibe: -
+; Devuelve: -
 INTERRUPCION_COMPARADOR:
 
 	PUSH R16

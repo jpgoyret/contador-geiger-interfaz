@@ -1,10 +1,9 @@
+; ==================================================================
+; Archivo: maquina_estados_mediciones.asm
 ; Descripcion: maquina de estados perteneciente a la gestion
 ; de las mediciones
-; Utiliza los registros EVENTO y ESTADO descriptos en main.asm
-
-
-;************************************************************************************************
-
+; NOTA: Utiliza los registros EVENTO y ESTADO descriptos en main.asm
+; ==================================================================
 
 MAQUINA_ESTADOS_MEDICIONES:
 
@@ -55,13 +54,12 @@ ESTADO_OSCIOSO_MEDICION:
 	RJMP _CONF_ESTADO_ENVIAR_TIEMPO_PULSOS
 	SBR ESTADO, (1<<EST_MEDIR_DEVOLVER_TOTAL)
 
-	;CLR R4
-	CALL INICIAR_TIMER_1								;Se enciende el TIMER 1, para comenzar a medir
+	CALL CONF_TIMER1_MEDICION								;Se enciende el TIMER 1, para comenzar a medir
 	RJMP _FIN_ESTADO_OSCIOSO_MEDICION
 
 _CONF_ESTADO_ENVIAR_TIEMPO_PULSOS:
 	SBR ESTADO, (1<<EST_MEDIR_DEVOLVER_TIEMPOS)
-	CALL INICIAR_TIMER_1								;Se enciende el TIMER 1, para comenzar a medir
+	CALL CONF_TIMER1_MEDICION								;Se enciende el TIMER 1, para comenzar a medir
 	RJMP _FIN_ESTADO_OSCIOSO_MEDICION
 
 _FIN_ESTADO_OSCIOSO_MEDICION:
@@ -115,12 +113,8 @@ ESTADO_MEDIR_DEVOLVER_TOTAL:
 	; se entra en este estado.
 
 _ESTADO_MEDIR_CHEQUEAR_FIN_VENTANA:
-	;SBI PORTB, 1
 	BRTC NO_SE_TERMINO_VENTANA								;Si el flag T está en 0, se continua con la ventana
 	CLT														;Si no, es porque se terminó una ventana, y por una interrupción, se pone en 1
-
-
-	; VENTANA TERMINADA:
 	
 
 
@@ -147,9 +141,6 @@ _CONTINUAR_ESTADO_MEDIR_CHEQUEAR_FIN_VENTANA:
 
 	CLR CONTADOR_DE_PULSOS									;Se limpian los pulsos de la ventana anterior
 
-	;SBR EVENTO, (1<<FIN_VENTANA)							;Se enciende el flag de fin de ventana en ESTADO, para indicarle a la UART que debe enviar los datos medidos
-	; TESTEO DE SI SE TERMINÓ DE MEDIR
-
 	PUSH R16
 	DEC VENTANAS_A_MEDIR_LOW
 	BRNE NO_ES_CERO
@@ -161,7 +152,6 @@ _CONTINUAR_ESTADO_MEDIR_CHEQUEAR_FIN_VENTANA:
 
 CERO:
 	CALL APAGAR_TIMER_1										;Finalizadas la medición total, se apaga el timer 1.
-	;CBI PORTB, 1
 	POP R16													;Se apaga el LED para indicar fin de medición
 	LDI ESTADOS_LCD, MEDICION_FINALIZADA_LCD
 	RJMP MOSTRAR_PROMEDIO
@@ -249,8 +239,6 @@ _ESTADO_MEDIR_ABORTAR:
 	CBR EVENTO, (1<<DETENER_MEDICION)
 
 	CALL APAGAR_TIMER_1								; Se apaga el timer 1
-
-	;CBI PORTB, 1
 
 	CBR ESTADO, (1<<EST_MEDIR_DEVOLVER_TIEMPOS)
 	CBR ESTADO, (1<<EST_MEDIR_DEVOLVER_TOTAL)

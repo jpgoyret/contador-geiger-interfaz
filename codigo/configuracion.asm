@@ -1,5 +1,8 @@
+; ==================================================================
+; Archivo: configuracion.asm
 ; Descripcion: funciones que graban registros en RAM
 ; para la configuracion del dispositivo
+; ==================================================================
 
 ; ===================================================================
 ; ========================= Registros auxiliares ====================
@@ -49,7 +52,6 @@ REGISTRO_VENTANA_TIEMPO: .BYTE 1
 
 ; Registro para guardar la cantidad de ventanas a medir
 VENTANAS_A_MEDIR_RAM: .BYTE 3											;[nibble alto]:[nibble intermedio]:[nibble bajo]
-;VENTANAS_A_MEDIR_RAM: .BYTE 1
 
 ; Registro para guardar el valor del umbral de pulsos
 ; por ventana por encima del cual se enciende
@@ -75,14 +77,20 @@ REGISTRO_CONF_GENERAL: .BYTE 1
 ; REGISTRO_VENTANA_TIEMPO = 2 ---> Duracion de la venta: 100ms
 ; VENTANAS_A_MEDIR_RAM = 10 ---> Cantidad de ventanas a medir antes de terminar la medicion: 10
 ; REGISTRO_UMBRAL = 10 ---> Cantidad de pulsos por ventana antes encender el led/buzzer: 10
+; Recibe: -
+; Devuelve: -
 CONFIGURAR_REGISTROS_DEFAULT:
 	LDI T0, 3
 	STS REGISTRO_VENTANA_TIEMPO, T0
 	LDI T0, 10
+	STS VENTANAS_A_MEDIR_RAM+2, T0
+	LDI T0, 0
 	STS VENTANAS_A_MEDIR_RAM+1, T0
 	LDI T0, 0
 	STS VENTANAS_A_MEDIR_RAM, T0
 	LDI T0, 1
+	STS REGISTRO_UMBRAL+2, T0
+	LDI T0, 0
 	STS REGISTRO_UMBRAL+1, T0
 	LDI T0, 0
 	STS REGISTRO_UMBRAL, T0
@@ -91,10 +99,11 @@ CONFIGURAR_REGISTROS_DEFAULT:
 	RET
 
 
-
+; ===================================================================
 ; Descripcion: parseo del tamano de ventana recibido mediante el comando
 ; CONFigure:WINDow N, donde N es el tamano de ventana
 ; Recibe: posicion de memoria del buffer de RX donde comienza N en el puntero X
+; Devuelve: -
 CONFIGURAR_VENTANA_TIEMPO:
 	PUSH T0
 	PUSH T1
@@ -135,8 +144,8 @@ _GUARDAR_REGISTRO_COUNT_REGISTER:
 
 ; ==============================================================
 ; Descripcion: lee el registro donde se encuentra definida la ventana de tiempo y devuelve su valor
-; Entradas: -
-; Salidas: -
+; Recibe: -
+; Devuelve: -
 DEVOLVER_VENTANA_TIEMPO:
 	PUSH T0
 	PUSH R18
@@ -170,24 +179,24 @@ _ENVIAR_VENTANA_TIEMPO:
 
 ; ==============================================================
 ; Descripcion: activa el bit para iniciar una medicion en el registro EVENTO
-; Entradas: -
-; Salidas: -
+; Recibe: -
+; Devuelve: -
 CONFIGURAR_EVENTO_INICIAR_MEDICION:
 	SBR EVENTO, (1<<COMENZAR_MEDICION)
 	RET
 
 ; ==============================================================
 ; Descripcion: activa el bit para detener una medicion en el registro EVENTO
-; Entradas: -
-; Salidas: -
+; Recibe: -
+; Devuelve: -
 CONFIGURAR_EVENTO_DETENER_MEDICION:
 	SBR EVENTO, (1<<DETENER_MEDICION)
 	RET
 
 ; ==============================================================
 ; Descripcion: devuelve el valor del registro VENTANAS_A_MEDIR_RAM
-; Entradas: -
-; Salidas: -
+; Recibe: -
+; Devuelve: -
 DEVOLVER_NUMERO_VENTANAS:
 
 	LDS R29, VENTANAS_A_MEDIR_RAM
@@ -200,8 +209,8 @@ DEVOLVER_NUMERO_VENTANAS:
 
 ; ==============================================================
 ; Descripcion: devuelve el valor del registro REGISTRO_UMBRAL
-; Entradas: -
-; Salidas: -
+; Recibe: -
+; Devuelve: -
 DEVOLVER_UMBRAL:
 
 	LDS R29, REGISTRO_UMBRAL
@@ -213,47 +222,17 @@ DEVOLVER_UMBRAL:
 	RET
 
 ; ==============================================================
-; Descripcion: indica si el tubo del contador se encuentra encendido
-; Entradas: -
-; Salidas: -
-/*
-DEVOLVER_CONF_ENCENDIDO_TUBO:
-
-	; Cargar primera parte del mensaje en buffer
-	LDI R18, LOW(MENSAJE_ESTADO_FUENTE)
-	LDI R19, HIGH(MENSAJE_ESTADO_FUENTE)
-	CALL CARGAR_BUFFER
-
-	; Chequear si el tubo se encuentra encendido
-	LDS R16, REGISTRO_CONF_GENERAL
-	SBRC R16, BIT_ACTIVAR_FUENTE
-	RJMP _FUENTE_APAGADA
-
-	CALL CARGAR_MENSAJE_ON_UART
-	
-	CALL ENVIAR_DATOS_UART
-	RET
-	
-_FUENTE_APAGADA:
-
-	CALL CARGAR_MENSAJE_OFF_UART
-
-	CALL ENVIAR_DATOS_UART
-	RET
-*/
-
-; ==============================================================
 ; Descripcion: indica si una opcion en el registro REGISTRO_CONF_GENERAL esta activada
-; Entradas:
+; Recibe:
 ; --> R18 y R19 con la posicion de memoria del mensaje correspondiente a la opcion de configuracion
 ; --> R17 con el bit asociado a la configuracion en REGISTRO_CONF_GENERAL
-; Salidas: -
+; Devuelve: -
 DEVOLVER_CONF_BIT:
 
 	; Cargar primera parte del mensaje en buffer utilizando los registros R18 y R19
 	CALL CARGAR_BUFFER
 
-	; Chequear si el tubo se encuentra encendido
+	; Chequear si el bit deseado se encuentra activado
 	LDS R16, REGISTRO_CONF_GENERAL
 	AND R16, R17
 	BRNE _OPCION_ACTIVADA
@@ -273,7 +252,7 @@ _OPCION_ACTIVADA:
 ; ==============================================================
 ; Descripcion: cargar el mensaje ON en el buffer de TX
 ; Recibe: -
-; Salidas: -
+; Devuelve: -
 CARGAR_MENSAJE_ON_UART:
 	LDI R18, 'O'
 	CALL CARGAR_BUFFER_TX_CON_CARACTER
@@ -286,7 +265,7 @@ CARGAR_MENSAJE_ON_UART:
 ; ==============================================================
 ; Descripcion: cargar el mensaje OFF en el buffer
 ; Recibe: -
-; Salidas: -
+; Devuelve: -
 CARGAR_MENSAJE_OFF_UART:
 	LDI R18, 'O'
 	CALL CARGAR_BUFFER_TX_CON_CARACTER
@@ -302,7 +281,7 @@ CARGAR_MENSAJE_OFF_UART:
 ; ==============================================================
 ; Descripcion: devolver la configuracion de todo el dispositivo por UART
 ; Recibe: -
-; Salidas: -
+; Devuelve: -
 DEVOLVER_CONFIGURACION:
 
 	; Numero de ventanas
@@ -387,10 +366,6 @@ DEVOLVER_CONFIGURACION:
 	RET
 
 
-;MENSAJE_CANTIDAD_VENTANAS: .db "Numero de ventanas:", '\n', 0
-;MENSAJE_TRIGGER_UMBRAL: .db "Umbral del trigger:", '\n', 0
-;MENSAJE_VENTANA_DURACION: .db "Duracion de la ventana:", '\n', 0
-
 BUCLE_POLLING_DEVOLVER_CONFIGURACION:
 _BUCLE_POLLING_DEVOLVER_CONFIGURACION:
 	SBRC EVENTO, ENVIANDO_DATOS_UART
@@ -401,7 +376,7 @@ _BUCLE_POLLING_DEVOLVER_CONFIGURACION:
 ; ==============================================================
 ; Descripcion: configura la senal sonora
 ; Recibe: puntero X con la posicion de memoria del buffer de RX donde comienza el dato booleano 
-; Salidas: -
+; Devuelve: -
 CONFIGURAR_SENAL_SONORA:
 	
 	CALL VERIFICAR_BOOLEANO_UART
@@ -429,7 +404,7 @@ _RET_CONFIGURAR_SENAL_SONORA:
 ; ==============================================================
 ; Descripcion: configura el bloqueo del teclado
 ; Recibe: puntero X con la posicion de memoria del buffer de RX donde comienza el dato booleano 
-; Salidas: -
+; Devuelve: -
 CONFIGURAR_BLOQUEO_TECLADO:
 	CALL VERIFICAR_BOOLEANO_UART
 	BRCS _RET_CONFIGURAR_BLOQUEO_TECLADO
@@ -454,7 +429,7 @@ _RET_CONFIGURAR_BLOQUEO_TECLADO:
 ; ==============================================================
 ; Descripcion: configura el envio de los tiempos de cada pulso por UART
 ; Recibe: puntero X con la posicion de memoria del buffer de RX donde comienza el dato booleano 
-; Salidas: -
+; Devuelve: -
 CONFIGURAR_ENVIO_TIEMPOS_PULSOS:
 	CALL VERIFICAR_BOOLEANO_UART
 	BRCS _RET_CONFIGURAR_ENVIO_TIEMPOS_PULSOS
@@ -480,7 +455,7 @@ _RET_CONFIGURAR_ENVIO_TIEMPOS_PULSOS:
 ; ==============================================================
 ; Descripcion: configura el envio de los tiempos de cada pulso por UART
 ; Recibe: puntero X con la posicion de memoria del buffer de RX donde comienza el dato booleano 
-; Salidas: -
+; Devuelve: -
 CONFIGURAR_APAGADO_FUENTE:
 	CALL VERIFICAR_BOOLEANO_UART
 	BRCS _RET_CONFIGURAR_APAGADO_FUENTE
@@ -504,8 +479,9 @@ _RET_CONFIGURAR_APAGADO_FUENTE:
 
 ; ==============================================================
 ; Descripcion: detecta si se ha recibido un parametro booleano por UART
-; Recibe: puntero X con la posicion de memoria del buffer de RX donde comienza el dato booleano 
-; Salidas: activa el bit de carry si el dato es no es booleano, sino lo desactiva.
+; Recibe: puntero X con la posicion de memoria del buffer de RX 
+; donde comienza el dato booleano 
+; Devuelve: activa el bit de carry si el dato es no es booleano, sino lo desactiva.
 VERIFICAR_BOOLEANO_UART:
 	LD T0, X+
 	LD T1, X
@@ -532,7 +508,7 @@ _RET_VERIFICAR_BOOLEANO_UART:
 ; ==============================================================
 ; Descripcion: validacion de datos numericos que llegan por UART en formato ASCII
 ; Recibe: puntero X con la posicion de memoria del buffer de RX donde comienza el numero
-; Salidas: R16 con el valor de la cantidad de digitos si no hubo un error
+; Devuelve: R16 con el valor de la cantidad de digitos si no hubo un error
 ;          ACtiva el bit de carry si se produjo un error
 ; NOTA: como maximo pueden recibirse 5 digitos en formato ASCII
 VALIDAR_ASCII_UART:
@@ -577,8 +553,9 @@ _RET_ERROR_VALIDAR_ASCII_UART:
 	RET
 
 ; ===================================================================
-; ========================= Espacios de memoria reservados ==========
+; ============================= MENSAJES ============================
 ; ===================================================================
+
 ; Mensajes para reportar configuracion
 MENSAJE_ESTADO_FUENTE: .db "Estado de la fuente: ", 0
 MENSAJE_ESTADO_SENAL_SONORA: .db "Señal sonora: ", 0

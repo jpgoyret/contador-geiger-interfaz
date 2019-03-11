@@ -1,8 +1,14 @@
-; uart.asm
+; ==================================================================
+; Archivo: uart.asm
+; Descripcion: biblioteca con funciones para manejo de la comunicacion UART
+
+; Usos de UART:
+; 1) Comunicarse con una PC para ser permitir configurar el dispositivo,
+;    ejecutar mediciones, etc. via protocolo SCPI
 ;
-; Created: 15/10/2018 21:53:12
-; Author : Juan Pablo Goyret
-; Descripcion: biblioteca con funciones para a comunicacion por puerto serie
+; ==================================================================
+
+; ==================== INSTRUCCIONES DE USO =========================
 
 ; Instrucciones:
 ; ==> Para una cadena armada dinamicamente
@@ -29,6 +35,40 @@
 ; 1- Cargar en R18 y R19 la direccion de memoria de la cadena (son el LSB y el MSB respectivamente)
 ; 2- Llamar a CARGAR_BUFFER
 ; 3- Llamar a ACTIVAR_INT_TX_UDRE0 para activar la interrupcione de TX de la UART y comenzar con el envio de datos
+
+
+; ==================== FIN INSTRUCCIONES DE USO ======================
+
+; ==================== REGISTROS USART/UART ==========================
+
+; REGISTRO UCSR0B:
+; [RXCIE0][TXCIE0][UDRIE0][RXEN0][TXEN0][UCSZ02][RXB80][TXB80]
+;
+; RXCIE0 = 1: habilita la interrupcion por recepción de un byte por 
+;             medio de RX completada
+; TXCIE0 = 1: habilita la interrupcion por envio competado 
+;             de un byte por medio de TX
+; RXEN0 = 1: habilita el receptor de UART. Configura el pin RX para servir a UART
+; TXEN0 = 1: habilita el envio de datos por UART. 
+;             Configura el pin TX para servir a UART
+
+; REGISTRO UCSR0C:
+; [UMSEL01][UMSEL00][UPM01][UPM00][USBS0][UCSZ01][UCSZ00][UCPOL0]
+;
+; UCSZ02|UCSZ01|UCSZ00: configuran el numero de bits enviados por UART 
+;                       en un paquete
+;000 -> 5 bits
+;001 -> 6 bits
+;010 -> 7 bits
+;011 -> 8 bits
+;100 -> Reservado
+;101 -> Reservado
+;110 -> Reservado
+;111 -> 9 bits
+
+; UBRR0H[3:0],UBRR0L: registros para la configuracion del BAUD RATE de UART
+
+; ==================== FIN REGISTROS USART/UART =====================
 
 ; ===================================================================
 ; ========================= Constantes ==============================
@@ -75,7 +115,7 @@
 ; cada vez que el buffer de datos UDR0 se encuentra vacio.
 ; Una vez que el buffer de transmision se hacia vaciado, se desactiva
 ; la interrupcion
-; Entradas: BUFFER_TX, PTR_TX_L, PTR_TX_H
+; Recibe: BUFFER_TX, PTR_TX_L, PTR_TX_H
 ; Devuelve: -
 USART_UDRE:
 
@@ -138,7 +178,7 @@ _FIN_TRANSMISION_UART:
 ; --> Esta termina con un caracter nulo
 ; --> Su largo es igual o mayor al del buffer de lectura
 ;
-; Entradas: ninguna
+; Recibe: -
 ; Devuelve: BUFFER_RX, BYTES_RECIBIDOS
 USART_RX:
 
@@ -164,8 +204,8 @@ USART_RX:
 	ST X+, T0
 	INC BYTES_RECIBIDOS
 	
-	; Verificar si el caracter recibido es newline
-	CPI T0, '\n'
+	; Verificar si el caracter recibido es el de fin de trama
+	CPI T0, '\r'
 	BREQ _FIN_CADENA
 
 	; Verificar si la cantidad de bytes recibidos ha excedido
@@ -233,6 +273,8 @@ _OVERFLOW_BUFFER:
 	POP XL
 	POP T0
 	RETI
+
+; =========================== Fin USART_RX =========================
 
 ; ===================================================================
 ; ==================== Funciones generales ==========================
@@ -488,8 +530,6 @@ DESACTIVAR_INT_RX:
 CARGAR_BUFFER:
 	PUSH T0
 	PUSH T1
-;	PUSH XL
-;	PUSH XH
 	PUSH ZL
 	PUSH ZH
 
@@ -520,24 +560,16 @@ _LOOP_CARGAR_BUFFER:
 	RJMP _LOOP_CARGAR_BUFFER
 
 _RETORNAR_CARGAR_BUFFER:
-
-	; Activar interrupcion por buffer UDR0 vacio para
-	; enviar el contenido del buffer
-;	CALL ACTIVAR_INT_TX_UDRE0	 
-
-
 	POP ZH
 	POP ZL
-;	POP XH
-;	POP XL
 	POP T1
 	POP T0
 	RET
 
 ; =============================================================
 ; Descripcion: carga el buffer de TX con los datos almacenados en el buffer de RX
-; para hacer un echo de lo recibido
-; Entradas: BUFFER_RX
+; para hacer un echo de lo recibido.
+; Recibe: BUFFER_RX
 ; Devuelve: BUFFER_TX
 
 UART_ECHO:
@@ -584,13 +616,14 @@ _RETORNAR_UART_ECHO:
 ; =================================================
 ; Descripcion: carga en el buffer de TX una cadena de texto almacenada en una
 ; tabla en memoria RAM
-; Entradas: 
+; Recibe: 
 ; -> puntero a cadena en RAM (registros R18 y R19)
 ; -> registro R20 indicando que tipo de caracter se quiere enviar al final de la cadena 
 ; (a modo de caracter de fin de trama)
 ; -- R20 = 0x00 : no colocar ningun caracter
 ; -- R20 = 0x01 : agregar ','
 ; -- R20 = 0x02 : agregar ';'
+; Devuelve: -
 
 CARGAR_BUFFER_DESDE_RAM:
 	PUSH T0
@@ -669,9 +702,9 @@ _RET_CARGAR_BUFFER_DESDE_RAM:
 	RET
 
 
-; =============================
+; =========================================================
 ; Descripcion: coloca el puntero X al comienzo del buffer de transmision
-; Entradas: ninguna
+; Recibe: -
 ; Devuelve: puntero X con la direccion del comienzo del buffer de transmision
 IR_COMIENZO_BUFFER_TX:
 	PUSH T0
@@ -686,8 +719,8 @@ IR_COMIENZO_BUFFER_TX:
 
 ; =====================================================
 ; Descripcion: cargar el buffer de tx con un caracter
-; Entrada: R18
-; Salida: -
+; Recibe: R18
+; Devuelve: -
 CARGAR_BUFFER_TX_CON_CARACTER:
 	; Cargar puntero X con la direccion del buffer de transmision
 	INC BYTES_TRANSMITIR
@@ -704,8 +737,8 @@ ENVIAR_DATOS_UART:
 
 ; =====================================================
 ; Descripcion: transformar un numero binario a ASCII y enviar por UART
-; Entrada: registros R17 y R16 con el valor de 16 bits a convertir
-; Salida: -
+; Recibe: registros R17 y R16 con el valor de 16 bits a convertir
+; Devulve: -
 CONVERTIR_A_BINARIO_Y_ENVIAR_UART:
 
 	CALL IR_COMIENZO_BUFFER_TX
@@ -814,22 +847,25 @@ ENVIAR_ERROR_OCUPADO:
 	RET
 
 ; ===================================================================
-; ========================= Espacios de memoria reservados ==========
+; ================ Espacios de memoria reservados ===================
 ; ===================================================================
 .dseg
 BUFFER_TX: .BYTE BUFFER_SIZE
 BUFFER_RX: .BYTE BUFFER_SIZE
 
-MENSAJE_RAM_PRUEBAS: .BYTE 20
-
+; ===================================================================
+; ======================== MENSAJES =================================
+; ===================================================================
 .cseg
 ; Mensaje a enviar al iniciarse el sistema
-MENSAJE_TX: .DB '\n',"Interfaz de manejo por PC del contador Geiger",'\n',0
+MENSAJE_UART_INICIAL: .DB '\n',"Interfaz de manejo por PC del contador Geiger",'\n',0
 
 ; Mensaje indicando la disminucion del multiplicador
 MENSAJE_DEC_MUL: .DB "END  ",0 ; Debe tener 6 caracteres de largo incluyendo el nulo
 
-; ========= CODIGOS ==========
+; ===================================================================
+; ======================== CODIGOS ==================================
+; ===================================================================
 ; Codigos de error
 MENSAJE_ERROR_COMANDO: .db "-100", '\n', 0
 MENSAJE_ERROR_RECEPCION_OV: .DB "-363",'\n',0

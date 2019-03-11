@@ -1,4 +1,12 @@
-; Maquina de estados para mostrar los menús en el LCD
+; ==================================================================
+; Archivo: configuracion.asm
+; Descripcion: maquina de estados para mostrar los menús en el LCD
+; para la configuracion del dispositivo
+; ==================================================================
+
+; ===================================================================
+; ========================= Registros reservados ====================
+; ===================================================================
 
 .DEF ESTADOS_LCD = R22
 ; [7][6][5][4][3][2][1][0]
@@ -59,7 +67,16 @@
 
 ; 11 11 1111 -> Se terminó de medir
 
-;************************************************************************************************
+; ===================================================================
+; ===================== REGISTROS AUXILIARES ========================
+; ===================================================================
+
+; BOTONES_TECLADO: identifica el boton que ha sido presionado en el teclado
+.def BOTONES_TECLADO = R16
+
+; ===================================================================
+; ========================= CONSTANTES ==============================
+; ===================================================================
 
 .EQU ESCRIBIR_PRIMER_RENGLON = 7					; Bit que indica que se puede escribir en el primer renglón: 1=sí, 0=no
 .EQU ESCRIBIR_SEGUNDO_RENGLON = 6					; Bit que indica que se puede escribir en el segundo renglón: 1=sí, 0=no
@@ -125,7 +142,11 @@
 .EQU BOTON_SUPERIOR = 4
 .EQU BOTON_IZQUIERDA = 5
 .EQU BOTON_ERROR = 7
-;************************************************************************************************
+
+
+; ===================================================================
+; =================== ESPACIOS RESERVADOS EN RAM ====================
+; ===================================================================
 .dseg
 ; RAM MENU UMBRAL================================================================================
 MENU_UMBRAL_ASCII: .byte 6							; Se va a escribir la cadena ascii que se muestra por pantalla, del valor del umbral a setear
@@ -139,13 +160,14 @@ MENU_TIEMPO_TOTAL_ASCII: .byte 6					; El ascii del valor del tiempo total a set
 
 MENU_TIEMPO_TOTAL_POSICION_CURSOR: .byte 1			; Idem el byte de la posición del cursor para el umbral
 
-;************************************************************************************************
-.cseg
-;************************************************************************************************
 
+.cseg
+
+; ===================================================================
+; ======================= MAQUINA DE ESTADOS ========================
+; ===================================================================
 
 MAQUINA_ESTADOS_LCD:
-; Máquina de estados del LCD, para saber qué menú se está visualizando.
 
 	CPI ESTADOS_LCD, MEDICION_FINALIZADA_LCD
 	BREQ EST_MENU_FIN_MEDICION
@@ -314,7 +336,6 @@ SEGUIR_1_CONF_VENTANA:
 
 	CADENA_FLASH_LCD MENSAJE_1_ms
 
-	;CALL STRING_WRT_FLASH										; Se va a escribir lo que haya previamente cargado en el puntero Z
 	SBR ESTADOS_LCD, (1<<VENTANA_LCD_1ms)													; El puntero Z se carga en la toma de decisiones en función del botón presionado
 	CBR ESTADOS_LCD, (1<<ESCRIBIR_SEGUNDO_RENGLON)					; Se deshabilita la escritura del segundo renglón
 
@@ -630,22 +651,15 @@ ACCION_BOTON_MENU_PRINCIPAL:
 		RJMP ACCION_MENU_PRINCIPAL_OK_VENTANA
 
 		LDI ESTADOS_LCD, ENTRAR_MENU_UMBRAL							; Se setean los estados para entrar al menú de umbral
-		
-/*		CBR ESTADOS_LCD, (1<<MENU_PRINCIPAL_LCD)						; Se setea que ya no se está en el menu principal
-		SBR ESTADOS_LCD, (1<<CONF_UMBRAL_LCD)						; Se setea que se quiere entrar al menu de configurar el umbral
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_PRIMER_RENGLON)				; Se habilita que se escriba en el primer renglon*/
+
 		RET
 ; ======================================================
 		ACCION_MENU_PRINCIPAL_OK_VENTANA:	
 		SBRS ESTADOS_LCD, CONF_VENTANA_LCD
 		RJMP ACCION_MENU_PRINCIPAL_OK_DURACION
 
-
 		LDI ESTADOS_LCD, ENTRAR_MENU_VENTANA
-/*		CBR ESTADOS_LCD, (1<<MENU_PRINCIPAL_LCD)					; Se indica que ya no estoy en el menu principal
-		SBR ESTADOS_LCD, (1<<CONF_VENTANA_LCD)						; Se indica que ahora voy a estar en el menú de configuracion de ventana
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_PRIMER_RENGLON)				; Se habilita la escritura del primer renglon
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_SEGUNDO_RENGLON)*/
+
 		RET
 ; ======================================================
 		ACCION_MENU_PRINCIPAL_OK_DURACION:
@@ -653,11 +667,6 @@ ACCION_BOTON_MENU_PRINCIPAL:
 		RJMP ACCION_MENU_PRINCIPAL_OK_BUZZER
 
 		LDI ESTADOS_LCD, ENTRAR_MENU_TIEMPO_TOTAL
-
-/*		CBR ESTADOS_LCD, (1<<MENU_PRINCIPAL_LCD)						; Se indica que ya no se está en el el menú principal
-		SBR ESTADOS_LCD, (1<<CONF_TIEMPO_TOTAL_LCD)					; Se indica que ahora estoy en el menú de configurar buzzer
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_PRIMER_RENGLON)				; Se habilita la escritura del primer renglón
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_SEGUNDO_RENGLON)*/
 
 		RET
 ; ======================================================
@@ -667,9 +676,6 @@ ACCION_BOTON_MENU_PRINCIPAL:
 
 		LDI ESTADOS_LCD, ENTRAR_MENU_BUZZER
 
-/*		CBR ESTADOS_LCD, (1<<MENU_PRINCIPAL_LCD)						; Se inhabilita que estoy en el menú principal
-		SBR ESTADOS_LCD, (1<<CONF_BUZZER_LCD)						; Se habilita que se va a entrar en el menú de configurar el buzzer
-		SBR EStADOS_LCD, (1<<ESCRIBIR_PRIMER_RENGLON)					; Se habilita la escritura del primer renglón*/
 		RET
 ; ======================================================
 		ACCION_MENU_PRINCIPAL_OK_MEDIR:
@@ -678,10 +684,6 @@ ACCION_BOTON_MENU_PRINCIPAL:
 
 		LDI ESTADOS_LCD, ENTRAR_MENU_COMENZAR_MEDICION
 
-/*		CBR ESTADOS_LCD, (1<<MENU_PRINCIPAL_LCD)						; Se inhabilita que estoy en el menú principal
-		SBR ESTADOS_LCD, (1<<COMENZAR_MEDICION_LCD)					; Se habilita que se entra en el menú medir
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_PRIMER_RENGLON)				; Se habilita la inscripción del primer renglón
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_SEGUNDO_RENGLON)*/
 		RET
 
 		NO_ACCION_MENU_PRINCIPAL_OK:
@@ -878,9 +880,6 @@ ACCION_BOTON_CONF_VENTANA:
 		POP R16
 
 		LDI ESTADOS_LCD, VOLVER_MENU_PRINCIPAL
-/*		SBR ESTADOS_LCD, (1<<MENU_PRINCIPAL_LCD)					; Configuro que vuelvo al menú principal
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_PRIMER_RENGLON)
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_SEGUNDO_RENGLON)				; Indico que puedo escribir nuevamente en el segundo renglón*/
 		RJMP NO_ACCION_VENTANA
 
 	CHEQUEAR_BOTON_CANCELAR_VENTANA:
@@ -888,9 +887,6 @@ ACCION_BOTON_CONF_VENTANA:
 	RJMP NO_ACCION_VENTANA
 		
 		LDI ESTADOS_LCD, VOLVER_MENU_PRINCIPAL
-/*		SBR ESTADOS_LCD, (1<<MENU_PRINCIPAL_LCD)						; Configuro que vuelvo al menú principal
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_PRIMER_RENGLON)
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_SEGUNDO_RENGLON)				; Indico que puedo escribir nuevamente en el segundo renglón*/
 		RJMP NO_ACCION_VENTANA
 		
 
@@ -1101,9 +1097,6 @@ ACCION_BOTON_CONF_TIEMPO:
 
 		LDI ESTADOS_LCD, VOLVER_MENU_PRINCIPAL
 
-/*		SBR ESTADOS_LCD, (1<<MENU_PRINCIPAL_LCD)						; Se configura para regresar al menpu principal
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_PRIMER_RENGLON)
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_SEGUNDO_RENGLON)*/
 		COMANDO_LCD LCD_CURSOR_OFF
 		
 		RJMP NO_ACCION_TIEMPO
@@ -1113,9 +1106,6 @@ ACCION_BOTON_CONF_TIEMPO:
 	RJMP NO_ACCION_TIEMPO
 		
 		LDI ESTADOS_LCD, VOLVER_MENU_PRINCIPAL
-/*		SBR ESTADOS_LCD, (1<<MENU_PRINCIPAL_LCD)
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_PRIMER_RENGLON)
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_SEGUNDO_RENGLON)*/
 		COMANDO_LCD LCD_CURSOR_OFF
 		
 
@@ -1328,9 +1318,6 @@ ACCION_BOTON_CONF_UMBRAL:
 
 		LDI ESTADOS_LCD, VOLVER_MENU_PRINCIPAL
 
-/*		SBR ESTADOS_LCD, (1<<MENU_PRINCIPAL_LCD)						; Se configura para regresar al menpu principal
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_PRIMER_RENGLON)
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_SEGUNDO_RENGLON)*/
 		COMANDO_LCD LCD_CURSOR_OFF
 		
 		RJMP NO_ACCION_UMBRAL
@@ -1340,9 +1327,6 @@ ACCION_BOTON_CONF_UMBRAL:
 	RJMP NO_ACCION_UMBRAL
 		
 		LDI ESTADOS_LCD, VOLVER_MENU_PRINCIPAL
-/*		SBR ESTADOS_LCD, (1<<MENU_PRINCIPAL_LCD)
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_PRIMER_RENGLON)
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_SEGUNDO_RENGLON)*/
 		COMANDO_LCD LCD_CURSOR_OFF
 		
 
@@ -1456,9 +1440,6 @@ ACCION_BOTON_CONF_BUZZER:
 		STS REGISTRO_CONF_GENERAL, R16
 		POP R16
 		LDI ESTADOS_LCD, VOLVER_MENU_PRINCIPAL
-/*		SBR ESTADOS_LCD, (1<<MENU_PRINCIPAL_LCD)					; Configuro que vuelvo al menú principal
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_PRIMER_RENGLON)
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_SEGUNDO_RENGLON)				; Indico que puedo escribir nuevamente en el segundo renglón*/
 		RJMP NO_ACCION_BUZZER
 
 	CHEQUEAR_BOTON_CANCELAR_BUZZER:
@@ -1466,9 +1447,6 @@ ACCION_BOTON_CONF_BUZZER:
 	RJMP NO_ACCION_BUZZER
 		
 		LDI ESTADOS_LCD, VOLVER_MENU_PRINCIPAL
-/*		SBR ESTADOS_LCD, (1<<MENU_PRINCIPAL_LCD)						; Configuro que vuelvo al menú principal
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_PRIMER_RENGLON)
-		SBR ESTADOS_LCD, (1<<ESCRIBIR_SEGUNDO_RENGLON)				; Indico que puedo escribir nuevamente en el segundo renglón*/
 		RJMP NO_ACCION_BUZZER
 		
 	NO_ACCION_BUZZER:
@@ -1476,11 +1454,9 @@ ACCION_BOTON_CONF_BUZZER:
 RET
 
 
-
-
-;************************************************************************************************
-;************************************************************************************************
-; Mensajes que se utilizan durante la interfaz LCD
+; ===================================================================
+; ============================ MENSAJES =============================
+; ===================================================================
 ; ================================================
 MENSAJE_MENU_PRINCIPAL: .db "Menu principal", 0
 MENSAJE_MENU_PRINCIPAL_UMBRAL: .db FLECHA_IZQUIERDA_ASCII, " Conf umbral  ", FLECHA_DERECHA_ASCII, 0

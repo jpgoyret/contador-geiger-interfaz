@@ -1,11 +1,19 @@
+; ==================================================================
+; Archivo: teclado.asm
 ; Descripcion: funciones para manejo del teclado
+; ==================================================================
 
 ; ===================================================================
 ; ========================= Registros auxiliares ====================
 ; ===================================================================
 
+.UNDEF aux_1
+.UNDEF aux_2
 .DEF aux_1 = R16
 .DEF aux_2 = R17
+
+.UNDEF key_low
+.UNDEF key_high
 .DEF key_low = R18
 .DEF key_high = R19
 
@@ -15,12 +23,6 @@
 
 .EQU KEY_DDR = DDRC
 .EQU KEY_PORT = PORTC
-
-;ADEN | ADSC | ADATE | ADIF | ADIE | ADPS2 | ADPS1 | ADPS0
-/*b7=1 habilita el ADC; b6=1 empieza la conversion; b5=1 auto trigger, b4=1 flag de ADC completado y actalizado; 
-b3=1 seta la interrupcion del ADC cuando se completó la conversión; b2-0: seteo de prescaler*/
-
-;Rango de tensión: +/- 0,25V
 
 .EQU KEY_1_MIN_LOW = 0x33	;	V1_MIN = 1.5 V ; ADC = 307 --> 0x0133
 .EQU KEY_1_MIN_HIGH = 0x01
@@ -71,66 +73,28 @@ b3=1 seta la interrupcion del ADC cuando se completó la conversión; b2-0: seteo 
 ; ========================= Funciones ===============================
 ; ===================================================================
 
-; Descripcion: configurar teclado
-; Recibe: -
-; Devuelve: -
-CONF_ADC:
-	    ; Configurar la AVCC como la referencia externa del ADC
-		SET_BIT ADMUX, REFS0
-		CLEAR_BIT ADMUX, ADLAR
-
-		; Activar la interrupcion del ADC
-		SET_BIT ADCSRA, ADIE
-
-		; Configurar el prescaler en 128
-		SET_BIT ADCSRA, ADPS0
-		SET_BIT ADCSRA, ADPS1
-		SET_BIT ADCSRA, ADPS2
-		
-		RET
-
-; ===================================================================
-; Descripcion: interrupcion del ADC
-ADC_ISR:
-		PUSH aux_1
-		IN aux_1, SREG
-		PUSH aux_1
-
-		; Activar evento de que se ha presionado una tecla
-		SBR EVENTO, (1<<TECLA_PRESIONADA)
-
-		POP aux_1
-		OUT SREG, aux_1
-		POP aux_1
-
-		RETI
-
-; ===================================================================
 ; Descripcion: leer el resultado de una medicion del ADC y setea un bit
 ; de acuerdo a la tecla que fue presionada
 ; Recibe: -
 ; Devuelve: -
 ADC_LEER_TECLA:
 
-		LDS aux_1, ADCL
-		LDS aux_2, ADCH
+	LDS aux_1, ADCL
+	LDS aux_2, ADCH
 
-		TOGGLE_LED_ARDUINO
+	PUSH R16
 
-		PUSH R16
+	; Encender timer0 para esperar cierto tiempo hasta activar nuevamente el boton 
+	LDS R16, MOTIVO_TIMER0
+	SBR R16, (1<<MOTIVO_TIMER0_TECLADO_POST_PRESION)
+	STS MOTIVO_TIMER0, R16
+	CALL ENCENDER_TIMER_0
 
-		; Encender timer0 para esperar cierto tiempo hasta activar nuevamente el boton 
-		LDS R16, MOTIVO_TIMER0
-		SBR R16, (1<<MOTIVO_TIMER0_TECLADO_POST_PRESION)
-		STS MOTIVO_TIMER0, R16
-		CALL ENCENDER_TIMER_0
+	POP R16
 
-		POP R16
-
-		; Limpiar el bit de evento asociado a una tecla presionada
-		CBR EVENTO, (1<<TECLA_PRESIONADA)
+	; Limpiar el bit de evento asociado a una tecla presionada
+	CBR EVENTO, (1<<TECLA_PRESIONADA)
 		
-; DESCOMENTAR ESTE CODIGO PARA PROCESAR LA TECLA
 	LOWER_OR_EQUAL_KEY_6_MAX:
 			LDI key_low, KEY_6_MAX_LOW
 			LDI key_high, KEY_6_MAX_HIGH
@@ -211,41 +175,37 @@ ADC_LEER_TECLA:
 			BRSH SET_KEY_1_REG
 			RJMP SET_KEY_ERROR_REG
 
-SET_KEY_6_REG:
-		LDI aux_1, KEY_6_REG
-		LDI aux_2, 1<<ADSC
-		RET
+	SET_KEY_6_REG:
+			LDI aux_1, KEY_6_REG
+			LDI aux_2, 1<<ADSC
+			RET
 
-SET_KEY_5_REG:
-		
-		LDI aux_1, KEY_5_REG
-		LDI aux_2, 1<<ADSC
-		RET
+	SET_KEY_5_REG:
+			LDI aux_1, KEY_5_REG
+			LDI aux_2, 1<<ADSC
+			RET
 
-SET_KEY_4_REG:
-		
-		LDI aux_1, KEY_4_REG
-		LDI aux_2, 1<<ADSC
-		RET
+	SET_KEY_4_REG:
+			LDI aux_1, KEY_4_REG
+			LDI aux_2, 1<<ADSC
+			RET
 
-SET_KEY_3_REG:
-		
-		LDI aux_1, KEY_3_REG
-		LDI aux_2, 1<<ADSC
-		RET
+	SET_KEY_3_REG:
+			LDI aux_1, KEY_3_REG
+			LDI aux_2, 1<<ADSC
+			RET
 
-SET_KEY_2_REG:
-		LDI aux_1, KEY_2_REG
-		LDI aux_2, 1<<ADSC
-		RET
+	SET_KEY_2_REG:
+			LDI aux_1, KEY_2_REG
+			LDI aux_2, 1<<ADSC
+			RET
 
-SET_KEY_1_REG:
-		;CBI PORTB, 1
-		LDI aux_1, KEY_1_REG
-		LDI aux_2, 1<<ADSC
-		RET
+	SET_KEY_1_REG:
+			LDI aux_1, KEY_1_REG
+			LDI aux_2, 1<<ADSC
+			RET
 
-SET_KEY_ERROR_REG:
-		LDI aux_1, KEY_ERROR_REG
-		LDI aux_2, 1<<ADSC
-		RET
+	SET_KEY_ERROR_REG:
+			LDI aux_1, KEY_ERROR_REG
+			LDI aux_2, 1<<ADSC
+			RET

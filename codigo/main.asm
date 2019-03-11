@@ -1,9 +1,6 @@
-;
-; Pruebas_UART.asm
-;
-; Created: 15/10/2018 21:53:12
-; Author : Juan Pablo Goyret
-; Descripcion: archivo para realizar pruebas sobre transmision UART
+; ==================================================================
+; Archivo: main.asm
+; ==================================================================
 
 .include "m328pdef.inc"
 .include "macros.inc"
@@ -42,7 +39,6 @@
 EVENTO2: .BYTE 1
 .cseg
 
-
 ; Constantes para identificar cada bit de EVENTO
 .equ TIMEOUT_UART = 0
 .equ OV_BUFFER_RX_UART = 1
@@ -76,8 +72,6 @@ EVENTO2: .BYTE 1
 ;	 7  Midiendo sin devolver los tiempos de llegada de cada pulso
 .def ESTADO = R24
 
-.def BOTONES_TECLADO = R16							; Se enciende determinaod bit, dependiendo del botón pulsado
-
 ; Constantes para identificar cada bit de ESTADO
 .equ EST_OSCIOSO_UART = 0
 .equ EST_RECIBIENDO_CADENA = 1
@@ -87,11 +81,13 @@ EVENTO2: .BYTE 1
 .equ EST_MEDIR_DEVOLVER_TIEMPOS = 6
 .equ EST_MEDIR_DEVOLVER_TOTAL = 7
 
-;MULTIPLICADOR PARA AMPLIAR EL OCR1A
-.DEF MUL_DE_VENTANA = R15
+
+; MUL_DE_VENTANA: multiplicador que permite ampliar el registro OCR1A (registro
+; comparador del timer1)
+.def MUL_DE_VENTANA = R15
 
 ; ===================================================================
-; ========================= Codigo principal ========================
+; ========================= Interrupciones ==========================
 ; ===================================================================
 
 .org 0
@@ -109,39 +105,52 @@ EVENTO2: .BYTE 1
 .org OVF0addr
 	JMP OVERFLOW_TIMER0
 
-.org OVF2addr							;Interrupción por overflow del timer 2
+;Interrupción por overflow del timer 2
+.org OVF2addr
 	JMP LCD_INTERRUPCION_OVERFLOW			
 
-.org ICP1addr							;Interrupción por detección de flanco de en el ICP1			
+;Interrupción por detección de flanco de en el ICP1	
+.org ICP1addr	
 	JMP INTERRUPCION_PULSO_DETECTADO
 
-.org OC1Aaddr							;Interrupción por comparación del TIMER 1
+;Interrupción por comparación del TIMER 1
+.org OC1Aaddr
 	JMP INTERRUPCION_FIN_VENTANA
 
+; Interrupcion del comparador analogico
 .org ACIaddr
 	JMP INTERRUPCION_COMPARADOR
 
+; Interrupcion de conversion por ADC completa
 .org ADCCaddr
 		RJMP ADC_ISR
 
+; ===================================================================
+; ========================= Codigo principal ========================
+; ===================================================================
+
+
 .org INT_VECTORS_SIZE
 
-.include "teclado.asm"
-.include "eeprom.asm"
-.include "timer0.asm"
-.include "uart.asm"
-.include "scpi.asm"
-.include "LCD.asm"
-.include "TIMER_2.asm"
-.include "TIMER_1.asm"
-.include "Mediciones.asm"
+; ========================== Dependencias ========================== 
 .include "Uso_general.asm"
 .include "configuracion.asm"
-.include "maquina_estados_uart.asm"
-.include "maquina_estados_mediciones.asm"
-.include "maquina_estados_LCD.asm"
-.include "pulsos_registro_desplazamiento.asm"
-.include "comparador.asm"
+.include "eeprom.asm"
+.include "perifericos/adc.asm"
+.include "perifericos/teclado.asm"
+.include "perifericos/comparador.asm"
+.include "perifericos/LCD.asm"
+.include "com_serie/uart.asm"
+.include "com_serie/scpi.asm"
+.include "timers/TIMER_0.asm"
+.include "timers/TIMER_2.asm"
+.include "timers/TIMER_1.asm"
+.include "mediciones/Mediciones.asm"
+.include "mediciones/pulsos_registro_desplazamiento.asm"
+.include "maquinas_de_estado/maquina_estados_uart.asm"
+.include "maquinas_de_estado/maquina_estados_mediciones.asm"
+.include "maquinas_de_estado/maquina_estados_LCD.asm"
+; ========================== Fin dependencias ======================
 
 INICIO:
 
@@ -149,7 +158,7 @@ INICIO:
 	CLR EVENTO
 	STS EVENTO2, EVENTO
 
-	; Hace que las maquinas de estado comiencen en estado oscioso
+	; Las maquinas de estado comienzan en estado oscioso
 	CLR ESTADO
 	SBR ESTADO, (1<<EST_OSCIOSO_MEDICION)
 	SBR ESTADO, (1<<EST_OSCIOSO_UART)
@@ -170,88 +179,102 @@ INICIO:
 
 	; Cargar configuracion del dispositivo por default
 	CALL CARGAR_CONFIGURACION_EEPROM
-;	CALL CONFIGURAR_REGISTROS_DEFAULT
 
-
-	; === Inicializar puertos ===
-	; Puertos del LCD
+	; Configurar puertos del LCD
 	CALL CONFIGURAR_PUERTOS_LCD
 
-	; Configurar perifericos, timers, etc y sus interrupciones
+	; ====== Configurar timers y com. serie ===========
 	CLI
+	
+	; Configurar el comparador
 	CALL CONF_COMPARADOR
+
+	; Configurar el ADC
 	CALL CONF_ADC
+	
 	; Configurar UART
 	CALL INICIALIZAR_UART
 	CALL ACTIVAR_TX_RX
 	CALL ACTIVAR_INT_RX
-	CALL ACTIVAR_ISR_TIMER0_OV	
-	CALL INIT_TIMER_2			;Inicializo el TIMER 2, para las interrupciones del LCD
-	CALL INIT_TIMER_1			;Inicializo el TIMER 1, para captar los pulsos de las mediciones
-	SEI							;Prendo interrupciones globales, para poder inicializar el LCD
 	
-	CALL INIT_LCD				;Inicializo el LCD
+	; Activar las interrupcion por overflow del TIMER 0 
+	; para detectar timeouts en la comunicacion serie
+	CALL ACTIVAR_ISR_TIMER0_OV	
+	
+	;Inicializar el TIMER 2 para las interrupciones del LCD
+	CALL INIT_TIMER_2
+	
+	;Inicializar el TIMER 1 para captar los pulsos de las mediciones
+	CALL INIT_TIMER_1
+	SEI	
 
-	; Enviar mensaje de prueba por UART
-	LDI R18, LOW(MENSAJE_TX)
-	LDI R19, HIGH(MENSAJE_TX)
+	; ====== Fin configurar timers y com. serie ===========
+	
+	; Inicializar la pantalla LCD
+	CALL INIT_LCD
+
+	; Enviar mensaje de bienvenida por UART
+	LDI R18, LOW(MENSAJE_UART_INICIAL)
+	LDI R19, HIGH(MENSAJE_UART_INICIAL)
 	CALL CARGAR_BUFFER
-
-	; Activar interrupcion por buffer UDR0 vacio para
-	; enviar el contenido del buffer
 	CALL ACTIVAR_INT_TX_UDRE0	
 
-/*	; Mensaje de bienvenida
-	LDI ZL, LOW(MENSAJE_BIENVENIDA_LCD<<1)
-	LDI ZH, HIGH(MENSAJE_BIENVENIDA_LCD<<1)
-	CALL STRING_WRT_LCD_FLASH*/
-
-	; Se configura para comenzar en el menú principal
-
-	LDI ESTADOS_LCD, VOLVER_MENU_PRINCIPAL							; Se habilita la escritura en ambos renglones del LCD, y se entra en el menú principal,
-																	; mostrando en el segundo renglón la opción de entrar al menú de umbral.
+	; Configurar pantalla LCD para comenzar en el menú principal:
+	; Se habilita la escritura en ambos renglones del LCD, y se entra en el menú principal,
+	; mostrando en el segundo renglón la opción de entrar al menú de umbral.
+	LDI ESTADOS_LCD, VOLVER_MENU_PRINCIPAL
 	
 	
 BUCLE_PRINCIPAL:
 	
+	; =================== CHEQUEAR TUBO ====================================
+	; Chequear si la configuracion almacenada indica que el tubo debe estar activado.
+	; De ser asi, activarlo. Sino, desactivarlo. 
 	CALL VERIFICAR_APAGADO_TUBO
+	; =================== FIN CHEQUEAR TUBO ================================
+
 
 	CLR R16
-	; =======================================================================
+
+	; =============================== ADC ==================================
 	; Si se ha presionado una tecla, entonces identificarla
 
 	SBRC EVENTO, TECLA_PRESIONADA
 	CALL ADC_LEER_TECLA
 	; LA TECLA PRESIONADA QUEDA ALMACENADA EN LOS REGISTROS R18 Y R19 PERO SOLO
 	; DE FORMA TEMPORAL. LA MAQUINA DE ESTADOS DEL LCD DEBE SER COLOCADA INMEDIATAMENTE
-	; DEBAJO DE CODIGO PORQUE SINO OTRA FUNCION PODRIA BORRAR LOS VALORES DE R18 Y R19
-
+	; DEBAJO DE ESTE CODIGO PORQUE SINO OTRA FUNCION PODRIA 
+	; BORRAR LOS VALORES DE R18 Y R19
+	; =============================== FIN ADC ==============================
 
 
 	; =======================================================================
-	; MAQUINAS DE ESTADO	
+	; ====================== MAQUINAS DE ESTADO =============================
 	; =======================================================================
-	; =======================================================================
-	; Maquina de estados dedicada a mostrar por pantalla al usuario, los menús correspondientes
+
+	
+	; ================== Maquina de estados del LDC =========================
+	; Maquina de estados dedicada a mostrar por pantalla los menús correspondientes
+	; al usuario
 
 	CPI ESTADOS_LCD, MIDIENDO_LCD
-	BREQ SKIPEAR_MAQUINA_ESTADOS_LCD
+	BREQ _SKIPEAR_MAQUINA_ESTADOS_LCD
 
 	CALL MAQUINA_ESTADOS_LCD
 
-	SKIPEAR_MAQUINA_ESTADOS_LCD:
-	; =======================================================================
+_SKIPEAR_MAQUINA_ESTADOS_LCD:
+
+	; ================== Maquina de estados de las mediciones ===============
 	; Maquina de estados dedicada a la gestion de las mediciones
 	CALL MAQUINA_ESTADOS_MEDICIONES
 
-	; =======================================================================
-	; Maquina de estados dedicada a la recepcion de una cadena por UART
+	; ================== Maquina de estados de UART =========================
+	; Maquina de estados dedicada a la recepcion o envio de una cadena por UART
 	 CALL MAQUINA_ESTADOS_UART
 
-	; =======================================================================
 
 	; =======================================================================
-	; FIN MAQUINAS DE ESTADO	
+	; ======================= FIN MAQUINAS DE ESTADO =======================	
 	; =======================================================================
 
 	RJMP BUCLE_PRINCIPAL

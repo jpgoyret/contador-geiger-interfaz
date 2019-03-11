@@ -1,6 +1,10 @@
+; ==================================================================
+; Archivo: maquina_estados_uart.asm
 ; Descripcion: maquina de estados perteneciente a la gestion
 ; de la comunicacion por UART
-; Utiliza los registros EVENTO y ESTADO descriptos en main.asm
+; NOTA: Utiliza los registros EVENTO y ESTADO descriptos en main.asm
+; ==================================================================
+
 
 MAQUINA_ESTADOS_UART:
 
@@ -133,7 +137,6 @@ ESTADO_INTERPRETANDO_CADENA:
 ESTADO_ERROR:
 
 	SBRC EVENTO, OV_BUFFER_RX_UART
-	;APAGAR_LED_ARDUINO
 
 	SBRC EVENTO, TIMEOUT_UART
 	RJMP _ERROR_TIMEOUT_RX

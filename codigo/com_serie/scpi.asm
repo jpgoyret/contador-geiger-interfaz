@@ -1,6 +1,9 @@
+; ==================================================================
+; Archivo: scpi.asm
 ; Descripcion: funciones para interpretacion de la informacion recibida mediante UART
-; a traves del protocolo scpi
-;===========================================================================================================
+; ==================================================================
+
+; ==================== LISTADO DE COMANDOS ==========================
 ; Comandos de acceso remoto para el control del dispositivo
 ; 
 ; Todo comando es una secuencia de carcateres ASCII terminados en '\n'.
@@ -65,7 +68,6 @@
 ; SYSTem:KLOCk?
 ; Funcion: Informa si el teclado se encuentra configurado para bloquearse durante una medicion
 ;
-;
 ; CONCEPTOS IMPORTANTES:
 ; En este archivo se identifican los comandos por niveles. Nivel 0 se corresponde
 ; con un comando perteneciente a un systema según el estandar SCPI, es decir, 
@@ -81,6 +83,7 @@
 ; ===================================================================
 ; ========================= Constantes  =============================
 ; ===================================================================
+
 ; Valor asociado a cada comando para las opciones de lo switches
 ; --> Comandos de nivel 0:
 .equ COMANDO_IDN = 0
@@ -205,31 +208,6 @@ INTERPRETAR_CADENA_COMANDOS:
 	PUSH_WORD YL, YH
 	PUSH_WORD ZL, ZH
 
-	; CODIGO DE PRUEBA
-/*	MOVW XH:XL, PTR_RX_H:PTR_RX_L
-
-	ldi r16, 7
-	mov BYTES_RECIBIDOS, r16
-
-	LDI R16, 'S'
-	ST X+, R16
-	LDI R16, 'T'
-	ST X+, R16
-	LDI R16,'A'
-	ST X+, R16
-	LDI R16, 'T'
-	ST X+, R16
-	LDI R16, 'u'
-	ST X+, R16
-	LDI R16, 's'
-	ST X+, R16
-	LDI R16, '\r'
-	ST X+, R16	
-	LDI R16,'\n'
-	ST X+, R16	*/
-	; ======*/
-
-
 	; Cargar parámetros de la funcion INTERPRETAR_COMANDO para parsear
 	; el primer comando de la cadena
 	MOVW XH:XL, PTR_RX_H:PTR_RX_L
@@ -277,17 +255,9 @@ _OPCION_COMANDO_CONF_QUERY:
 	JMP_IF_EQUAL T0, COMANDO_CONF_QUERY_1, _COMANDO_CONF_QUERY
 	JMP_IF_EQUAL T0, COMANDO_CONF_QUERY_2, _COMANDO_CONF_QUERY
 
-/*_OPCION_COMANDO_MEMORY:
-	JMP_IF_EQUAL T0, COMANDO_MEMORY_1, _SWITCH_COMANDO_MEMORY
-	JMP_IF_EQUAL T0, COMANDO_MEMORY_2, _SWITCH_COMANDO_MEMORY*/
-
 _OPCION_COMANDO_CONTROL:
 	JMP_IF_EQUAL T0, COMANDO_CONTROL_1, _SWITCH_COMANDO_CONTROL
 	JMP_IF_EQUAL T0, COMANDO_CONTROL_2, _SWITCH_COMANDO_CONTROL
-
-/*_OPCION_COMANDO_STATUS:
-	JMP_IF_EQUAL T0, COMANDO_STATUS_1, _SWITCH_COMANDO_STATUS
-	JMP_IF_EQUAL T0, COMANDO_STATUS_1, _SWITCH_COMANDO_STATUS*/
 
 _OPCION_COMANDO_SYSTEM:
 	JMP_IF_EQUAL T0, COMANDO_SYSTEM_1, _SWITCH_COMANDO_SYSTEM
@@ -361,31 +331,6 @@ _OPCION_COMANDO_CONF_DATA_QUERY:
 	RJMP _RETORNAR_ERROR_INTERPRETAR_CADENA_COMANDOS
 
 ; ===============================================================================
-; Switch del comando MEMory
-/*_SWITCH_COMANDO_MEMORY:
-
-	; Cargar los parametros para la funcion INTERPRETAR_COMANDO
-	LDI T4, LOW(COMANDOS_NIVEL_1_MEMORY)
-	LDI T5, HIGH(COMANDOS_NIVEL_1_MEMORY)
-	LDI T2, TOTAL_COMANDOS_NIVEL_1_MEMORY
-
-	CALL INTERPRETAR_COMANDO
-
-	; Si el indice el valor devuelto en T2 es 0,
-	; entonces no se ha recibido un comando correcto
-	; emitir un mensaje de error
-	JMP_IF_EQUAL T2, 0, _RETORNAR_ERROR_INTERPRETAR_CADENA_COMANDOS
-
-	; Recuperar en T0 el indice de la tabla en memoria flash del comando recibido
-	LDI T0, TOTAL_COMANDOS_NIVEL_1_MEMORY
-	SUB T0, T2
-
-_OPCION_COMANDO_MEMORY_DATA_QUERY:
-	JMP_IF_EQUAL T0, COMANDO_DATA_QUERY, _COMANDO_MEMORY_DATA
-
-	JMP _RETORNAR_ERROR_INTERPRETAR_CADENA_COMANDOS*/
-
-; ==========================================================================================
 ; Switch del comando CONTrol
 _SWITCH_COMANDO_CONTROL:
 
@@ -415,33 +360,6 @@ _OPCION_COMANDO_CONTROL_APOWER_QUERY:
 
 	RJMP _RETORNAR_ERROR_INTERPRETAR_CADENA_COMANDOS
 
-
-; ===============================================================================================
-; Switch del comando STATus
-/*_SWITCH_COMANDO_STATUS:
-
-	; Cargar los parametros para la funcion INTERPRETAR_COMANDO
-	LDI T4, LOW(COMANDOS_NIVEL_1_STATUS)
-	LDI T5, HIGH(COMANDOS_NIVEL_1_STATUS)
-	LDI T2, TOTAL_COMANDOS_NIVEL_1_STATUS
-
-	CALL INTERPRETAR_COMANDO
-
-	; Si el indice el valor devuelto en T2 es 0,
-	; entonces no se ha recibido un comando correcto
-	; emitir un mensaje de error
-	CPI T2, 0
-	IN T3, SREG
-	SBRC T3, SREG_Z
-	JMP _RETORNAR_ERROR_INTERPRETAR_CADENA_COMANDOS
-
-	; Recuperar en T0 el indice de la tabla en memoria flash del comando recibido
-	LDI T0, TOTAL_COMANDOS_NIVEL_1_STATUS
-	SUB T0, T2
-
-_OPCION_COMANDO_CONDITION_STATUS:
-	JMP_IF_EQUAL T0, COMANDO_CONDITION_QUERY_1, _COMANDO_CONDITION_STATUS
-	JMP_IF_EQUAL T0, COMANDO_CONDITION_QUERY_2, _COMANDO_CONDITION_STATUS*/
 
 ; ===============================================================================================
 ; Switch del comando SYSTem
@@ -622,11 +540,6 @@ _COMANDO_CONTROL_APOWER_QUERY:
 	CALL DEVOLVER_CONF_BIT
 	RJMP _RETORNAR_INTERPRETAR_CADENA_COMANDOS
 
-; Acciones asociadas a comandos de nivel 1 del sistema STAtus
-/*_COMANDO_STATUS_CONDITION:
-	CALL ENVIAR_IDENTIDAD ; TODO: incorporar funcion para retornar datos guardados en memoria
-	RJMP _RETORNAR_INTERPRETAR_CADENA_COMANDOS*/
-
 ; Acciones asociadas a comandos de nivel 1 del sistema MEMory
 _COMANDO_SYSTEM_KLOCK:
 	CALL CONFIGURAR_BLOQUEO_TECLADO
@@ -662,10 +575,8 @@ _RETORNAR_INTERPRETAR_CADENA_COMANDOS:
 ; ===================================================================
 ; =============== Funciones a ejecutar por comando ==================
 ; ===================================================================
-; NOTA: este bloque permanece en este archivo solamente con fines de prueba,
-; es probable que las funciones a ejecutar asociadas a cada cadena de comandos
-; se encuentren en archivos separados asociados a distintos componentes del
-; dispositivo
+; NOTA: el resto de la funciones a ejecutar por comando permanecen
+; en otros archivos
 
 ENVIAR_IDENTIDAD:
 	PUSH R18
@@ -695,8 +606,6 @@ INTERPRETAR_COMANDO:
 
 	LSL T4
 	ROL T5
-	;MOV YL, T4
-	;MOV YH, T5
 	MOV ZL, T4
 	MOV ZH, T5
 
@@ -711,7 +620,6 @@ __BUCLE_INT_COMANDO_IEEE:
 
 	CPI T3, 0; Si el comando recibido tiene un largo mayor a aquel con el que se esta
 			 ; comparando, entonces pasar a comparar con el siguiente
-	;CPI T3, MAX_TAMANO_COMANDO+1
 	BREQ  _FIN_COMANDO_EN_MEMORIA
 
 	DEC T3
@@ -744,18 +652,7 @@ ___SIGUIENTE_COMANDO:
 
 	LPM T3, Z+
 
-	; Incrementar el puntero Y que almacena el origen del comando en memoria
-;	LDI T0, MAX_TAMANO_COMANDO
-;	ADD YL, T0
-;	LDI T0, 0
-;	ADC YH, T0
-
-	; Transferir la posicion del comando a Z
-;	MOV ZL, YL
-;	MOV ZH, YH
-
 	; Volver al inicio del comando
-	;CLR T3
 	MOVW XH:XL, T5:T4
 
 	RJMP __BUCLE_INT_COMANDO_IEEE

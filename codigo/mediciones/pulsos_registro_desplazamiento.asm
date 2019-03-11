@@ -1,5 +1,8 @@
+; ==================================================================
+; Archivo: pulsos_registro_desplazamiento.asm
 ; Descripcion: registro de desplazamiento destinado a almacenar los tiempos de 
 ; pulsos que arriban al contador, para luego ser enviados por UART
+; ==================================================================
 
 ; ===================================================================
 ; ========================= Registros reservados ====================
@@ -7,8 +10,19 @@
 .def CANT_CARACTERES_GUARDADOS = R5
 
 ; ===================================================================
+; ========================= Registros en RAM ========================
+; ===================================================================
+.dseg
+; Registro que permite almacenar el tiempo de 60 pulsos, ya que cada uno ocupa
+; 6 bytes (tienen un maximo valor de 50.000)
+REGISTRO_DESPLAZAMIENTO: .BYTE 60
+
+
+; ===================================================================
 ; ========================= Registros auxiliares ====================
 ; ===================================================================
+.cseg
+
 .undef T0
 .undef T1
 .undef T2
@@ -57,6 +71,7 @@ _BUCLE_CARGAR_CADENA_REGISTRO_DESPLAZAMIENTO:
 	POP T0
 	RET
 
+	; ===================================================================
 ; Descripcion: transforma el tiempo de un pulso a ASCII y 
 ; lo guarda al final de un registro de desplazamiento
 ; Recibe: valor del tiempo del pulso (16 bits) en los registros R17 y R16
@@ -130,7 +145,7 @@ QUITAR_PULSO_REGISTRO_DESP_Y_ENVIAR_UART:
 	BREQ _RET_QUITAR_PULSO_REGISTRO_DESP_Y_ENVIAR_UART
 
 	LDI T0,  6; Cargar en T0 la cantidad de caracteres comprendidos por el tiempo del pulso
-		  ; (5 digitos mas \0)
+		      ; (5 digitos mas \0)
 	
 _BUCLE_1_QUITAR_PULSO:
 
@@ -152,6 +167,7 @@ _BUCLE_1_QUITAR_PULSO:
 
 	MOV T1, CANT_CARACTERES_GUARDADOS
 	; Desplazar cada caracter del buffer una vez hacia arriba en la memoria
+
 _BUCLE_2_QUITAR_PULSO:
 	LD T3, Y+
 	ST X+, T3
@@ -176,10 +192,3 @@ _RET_QUITAR_PULSO_REGISTRO_DESP_Y_ENVIAR_UART:
 	POP T0
 
 	RET
-
-.dseg
-; Registro que permite almacenar el tiempo de 60 pulsos, ya que cada uno ocupa
-; 6 bytes (tienen un maximo valor de 50.000)
-REGISTRO_DESPLAZAMIENTO: .BYTE 60
-
-.cseg
