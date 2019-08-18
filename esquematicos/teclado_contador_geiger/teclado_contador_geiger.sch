@@ -1,4 +1,5 @@
 EESchema Schematic File Version 4
+LIBS:teclado_contador_geiger-cache
 EELAYER 26 0
 EELAYER END
 $Descr A4 11693 8268
@@ -94,7 +95,7 @@ U 1 1 5D58773D
 P 4300 1750
 F 0 "J1" H 4327 1726 50  0000 L CNN
 F 1 "Conn_01x04_Female" H 4327 1635 50  0000 L CNN
-F 2 "Connector_JST:JST_EH_B04B-EH-A_1x04_P2.50mm_Vertical" H 4300 1750 50  0001 C CNN
+F 2 "Connector_JST:JST_XH_B04B-XH-A_1x04_P2.50mm_Vertical" H 4300 1750 50  0001 C CNN
 F 3 "~" H 4300 1750 50  0001 C CNN
 	1    4300 1750
 	1    0    0    -1  

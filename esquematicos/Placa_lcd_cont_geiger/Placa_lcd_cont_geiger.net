@@ -1,7 +1,7 @@
 (export (version D)
   (design
-    (source "C:\\Users\\Juan Pablo\\Documents\\repositorios\\contador-geiger-repositorio\\Placa_lcd_cont_geiger\\Placa_lcd_cont_geiger.sch")
-    (date "17/08/2019 13:50:12")
+    (source "C:\\Users\\Juan Pablo\\Documents\\repositorios\\contador-geiger-repositorio\\esquematicos\\Placa_lcd_cont_geiger\\Placa_lcd_cont_geiger.sch")
+    (date "18/08/2019 10:54:15")
     (tool "Eeschema (5.0.1)-4")
     (sheet (number 1) (name /) (tstamps /)
       (title_block
@@ -97,7 +97,7 @@
       (tstamp 5D5B30AC))
     (comp (ref J3)
       (value Conn_01x04_Female)
-      (footprint Connector_JST:JST_EH_B04B-EH-A_1x04_P2.50mm_Vertical)
+      (footprint Connector_JST:JST_XH_B04B-XH-A_1x04_P2.50mm_Vertical)
       (datasheet ~)
       (libsource (lib Connector) (part Conn_01x04_Female) (description "Generic connector, single row, 01x04, script generated (kicad-library-utils/schlib/autogen/connector/)"))
       (sheetpath (names /) (tstamps /))
