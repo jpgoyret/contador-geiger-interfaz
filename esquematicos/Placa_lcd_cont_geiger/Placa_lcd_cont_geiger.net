@@ -1,8 +1,8 @@
 (export (version D)
   (design
-    (source "C:\\Users\\Juan Pablo\\Documents\\repositorios\\contador-geiger-repositorio\\esquematicos\\Placa_lcd_cont_geiger\\Placa_lcd_cont_geiger.sch")
-    (date "23/08/2019 11:20:11")
-    (tool "Eeschema (5.0.1)-4")
+    (source /home/fede/Escritorio/contador-geiger-interfaz/esquematicos/Placa_lcd_cont_geiger/Placa_lcd_cont_geiger.sch)
+    (date "lun 26 ago 2019 13:49:28 -03")
+    (tool "Eeschema 5.0.2+dfsg1-1")
     (sheet (number 1) (name /) (tstamps /)
       (title_block
         (title)
@@ -132,7 +132,7 @@
       (tstamp 5D6006A5))
     (comp (ref J3)
       (value Conn_01x05_Female)
-      (footprint Connector_JST:JST_XH_B05B-XH-A_1x05_P2.50mm_Vertical)
+      (footprint Connectors_Molex:Molex_KK-6410-05_05x2.54mm_Straight)
       (datasheet ~)
       (libsource (lib Connector) (part Conn_01x05_Female) (description "Generic connector, single row, 01x05, script generated (kicad-library-utils/schlib/autogen/connector/)"))
       (sheetpath (names /) (tstamps /))
@@ -330,13 +330,13 @@
         (pin (num 3) (name E) (type passive)))))
   (libraries
     (library (logical Connector)
-      (uri "C:\\Program Files\\KiCad\\share\\kicad\\library/Connector.lib"))
+      (uri /usr/share/kicad/library/Connector.lib))
     (library (logical Connector_Generic)
-      (uri "C:\\Program Files\\KiCad\\share\\kicad\\library/Connector_Generic.lib"))
+      (uri /usr/share/kicad/library/Connector_Generic.lib))
     (library (logical Device)
-      (uri "C:\\Program Files\\KiCad\\share\\kicad\\library/Device.lib"))
+      (uri /usr/share/kicad/library/Device.lib))
     (library (logical Transistor_BJT)
-      (uri "C:\\Program Files\\KiCad\\share\\kicad\\library/Transistor_BJT.lib")))
+      (uri /usr/share/kicad/library/Transistor_BJT.lib)))
   (nets
     (net (code 1) (name "/9(**)")
       (node (ref P3) (pin 9)))
