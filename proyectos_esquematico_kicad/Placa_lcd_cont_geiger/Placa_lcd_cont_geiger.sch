@@ -1,6 +1,6 @@
 EESchema Schematic File Version 4
 LIBS:Placa_lcd_cont_geiger-cache
-EELAYER 26 0
+EELAYER 29 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
@@ -487,7 +487,7 @@ U 1 1 5D5A16D3
 P 1800 5000
 F 0 "Q1" H 1991 5046 50  0000 L CNN
 F 1 "BC548" H 1991 4955 50  0000 L CNN
-F 2 "Package_TO_SOT_THT:TO-92_Inline" H 2000 4925 50  0001 L CIN
+F 2 "Package_TO_SOT_THT:TO-92_Inline_Wide" H 2000 4925 50  0001 L CIN
 F 3 "http://www.fairchildsemi.com/ds/BC/BC547.pdf" H 1800 5000 50  0001 L CNN
 	1    1800 5000
 	1    0    0    -1  
@@ -498,7 +498,7 @@ U 1 1 5D5A183A
 P 3550 4250
 F 0 "Q2" H 3400 4500 50  0000 L CNN
 F 1 "BC548" H 3250 4400 50  0000 L CNN
-F 2 "Package_TO_SOT_THT:TO-92_Inline" H 3750 4175 50  0001 L CIN
+F 2 "Package_TO_SOT_THT:TO-92_Inline_Wide" H 3750 4175 50  0001 L CIN
 F 3 "http://www.fairchildsemi.com/ds/BC/BC547.pdf" H 3550 4250 50  0001 L CNN
 	1    3550 4250
 	1    0    0    -1  
@@ -660,7 +660,7 @@ U 1 1 5D6006A5
 P 3700 4800
 F 0 "Q3" H 3500 4650 50  0000 L CNN
 F 1 "BC558" H 3400 4550 50  0000 L CNN
-F 2 "Package_TO_SOT_THT:TO-92_Inline" H 3900 4725 50  0001 L CIN
+F 2 "Package_TO_SOT_THT:TO-92_Inline_Wide" H 3900 4725 50  0001 L CIN
 F 3 "http://www.fairchildsemi.com/ds/BC/BC557.pdf" H 3700 4800 50  0001 L CNN
 	1    3700 4800
 	1    0    0    -1  
@@ -671,7 +671,7 @@ U 1 1 5D602E50
 P 4000 3750
 F 0 "J3" V 3940 3462 50  0000 R CNN
 F 1 "Conn_01x05_Female" V 3849 3462 50  0000 R CNN
-F 2 "Connector_JST:JST_XH_B05B-XH-A_1x05_P2.50mm_Vertical" H 4000 3750 50  0001 C CNN
+F 2 "Connectors_Molex:Molex_KK-6410-05_05x2.54mm_Straight" H 4000 3750 50  0001 C CNN
 F 3 "~" H 4000 3750 50  0001 C CNN
 	1    4000 3750
 	0    -1   -1   0   
