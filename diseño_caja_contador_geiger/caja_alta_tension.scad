@@ -23,12 +23,12 @@
 //
 FootDia = 8;    //Diametro del pie para la placa
 FootHole = 0.1; //Agujero del tornillo
-FootHeight = 5; //Altura del pie para la placa
+FootHeight = 14+2.6; //Altura del pie para la placa
 Thick = 0.1;
 Filet = 0.1;        //Constante que define el ancho de la base de los soportes para la placa
 
-x = 114+2;
-y = 115.3+2;
+x = 114+2-5;
+y = 115.3+2-4.44;
 z = 70+2;
 dx = 4+2;
 dy = 4+2;
@@ -49,42 +49,50 @@ sy = 5;    //Espacio entre el borde de la placa y la posicion del agujero (sumad
 
 // Posiciones de los soportes para la placa---------------
 //pos_soportex1 = -x/2 + dx + ex2 + sx - FootDia/2;
-pos_soportex1 = -x/2 + dx - (FootDia+Filet)/2 + sx + ex2;
+//pos_soportex1 = -x/2 + dx - (FootDia+Filet)/2 + sx + ex2;
+pos_soportex1 = -46.05+6-2.5;
+pos_soportex3 = -46.05+6-2.5;
 //pos_soportex2 = x/2 - dx - ex2 - sx + FootDia/2;
-pos_soportex2 = x/2 - dx + (FootDia+Filet)/2 - sx - ex1;
+//pos_soportex2 = x/2 - dx + (FootDia+Filet)/2 - sx - ex1;
+pos_soportex2 = 39.05+7-2.5;
+pos_soportex4 = 39.05+7-2.5;
 //pos_soportey1 = -y/2 + dy + ey1 + sy - FootDia/2;
-pos_soportey1 = -y/2 + dy+ ey1 + sy - (FootDia+Filet)/2;
+//pos_soportey1 = -y/2 + dy+ ey1 + sy - (FootDia+Filet)/2;
+pos_soportey1 = -48.7-5+2;
+pos_soportey4 = -48.7-5+2;
 //pos_soportey2 = y/2 - dy - ey2 - sy + FootDia/2;
-pos_soportey2 = y/2 - dy - ey2 - sy + (FootDia+Filet)/2;
+//pos_soportey2 = y/2 - dy - ey2 - sy + (FootDia+Filet)/2;
+pos_soportey2 = 48.4-6+2;
+pos_soportey3 = 48.4-6+2;
 pos_soportez = -(z-dz)/2;
 
 //Agujero tubo---------------------------------------------------
 //FUE CHEQUEADO
-tubo_z = 27;
-tubo_y = 10;
+tubo_z = 16;
+tubo_y = 8;
 pos_tubo_x = x/2 - dx/4;
 //pos_tubo_y = -y/2 + 45 - tubo_y/2;
-pos_tubo_y = -y/2 -tubo_y/2 + 45;
+pos_tubo_y = -y/2 -tubo_y/2 + 48;
 //pos_tubo_z = -z/2 + 5 + 25 + tubo_z/2 + dz;
-pos_tubo_z = -z/2 + tubo_z/2 + 30 + FootHeight;
+pos_tubo_z = -z/2 + tubo_z/2 + 30 - 10;
 espesor_tubo = dx/2;
 
 //Agujero Arduino-----------------------------------------------
 
-arduino_x = 22;
-arduino_z = 27;
-pos_arduino_x = -x/2 + dx/4 + 65;
+arduino_x = 25;
+arduino_z = 16;
+pos_arduino_x = x/2 - arduino_x/2 - 33;
 pos_arduino_y = -y/2 - dy/4;
-pos_arduino_z = -z/2 + 30 + arduino_z/2;
+pos_arduino_z = -z/2 + arduino_z/2 + 20 ;
 espesor_arduino = dy/2;
 
 //Agujero jack energía------------------------------------------
 
-jack_x = 13;
+jack_x = 12;
 jack_z = 14;
-pos_jack_x = -x/2 + dx/4 + 33;
+pos_jack_x = -x/2 + dx/4 + 33 + 4 - 2;
 pos_jack_y = -y/2 - dy/4;
-pos_jack_z = -z/2 + 30 + jack_z/2;
+pos_jack_z = -z/2 + 23 + jack_z/2 - 4;
 espesor_jack = dy/2;
 
 //Ayuda para tornillo-------------------------------------------
@@ -99,12 +107,15 @@ d_tornillo = 2;
 
 //Ayuda para tornillo tapa------------------------------------
 
-ttx = 70;
-tty = 12;
-ttz = 12;
-pos_ttx = 0;
+//ttx = 70;
+//tty = 12;
+//ttz = 6;
+ttx = 6;
+tty = 30;
+ttz = 30;
+pos_ttx = -x/2 + ttx/2 + dx;
 pos_tty = -y/2 + tty/2;
-pos_ttz = -z/2 + ttz/2 + dz;
+pos_ttz = -z/2 + ttz/2 + 30;
 
 //Barras anti-flexibilidad--------------------------------------
 off_z = 20;
@@ -172,13 +183,14 @@ module parte_inferior (x,y,z,dx,dy,dz,rx,ry,rz,tapa){
     }
 }
 
-module soporte_placa(x1,x2,y1,y2,z){
+module soporte_placa(x1,x2,x3,x4,y1,y2,y3,y4,z){
 // Los cuatro pies donde se posa la placa
 
     translate ([x1,y1,z]) foot(FootDia,FootHole,FootHeight,Thick,Filet);
-    translate ([x1,y2,z]) foot(FootDia,FootHole,FootHeight,Thick,Filet);
-    translate ([x2,y1,z]) foot(FootDia,FootHole,FootHeight,Thick,Filet);
-    translate ([x2,y2,z]) foot(FootDia,FootHole,FootHeight,Thick,Filet);    
+    translate ([x2,y2,z]) foot(FootDia,FootHole,FootHeight,Thick,Filet);
+    translate ([x3,y3,z]) foot(FootDia,FootHole,FootHeight,Thick,Filet);
+    translate ([x4,y4,z]) foot(FootDia,FootHole,FootHeight,Thick,Filet);  
+    
     
 }
 
@@ -209,13 +221,19 @@ module agujero(dim_x,dim_y,dim_z,pos_x,pos_y,pos_z){
 
 module ayuda_para_tornillo(tx,ty,tz,pos_tx,pos_ty,pos_tz)
 {
-    difference(){
-        translate ([pos_tx,pos_ty,pos_tz]) cube([tx,ty,tz],center = true);
-        translate([pos_tx-(abs(pos_tx)/pos_tx)*tx/2,pos_ty-(abs(pos_tx)/pos_tx)*ty/2,pos_tz-tz/2]) rotate (a = [(abs(pos_tx)/pos_tx)*(-1)*90,-90,0]) linear_extrude(tx) polygon([[0,0],[tz,0],[0,ty]], paths=[[0,1,2]]);
-        translate([pos_tx+(abs(pos_tx)/pos_tx)*tx/4,pos_ty+ty/8,pos_tz + tz/2]) cylinder(h = tz/2 ,d = d_tornillo, $fn = 100,center = true);
-        
-        
-    }
+    translate([pos_tx,pos_ty,pos_tz]) cube([tx,ty,tz],center = true);
+    
+    translate([-pos_tx,pos_ty,pos_tz]) cube([tx,ty,tz],center = true);
+    
+    
+    
+//    difference(){
+//        translate ([pos_tx,pos_ty,pos_tz]) cube([tx,ty,tz],center = true);
+//        translate([pos_tx-(abs(pos_tx)/pos_tx)*tx/2,pos_ty-(abs(pos_tx)/pos_tx)*ty/2,pos_tz-tz/2]) rotate (a = [(abs(pos_tx)/pos_tx)*(-1)*90,-90,0]) linear_extrude(tx) polygon([[0,0],[tz,0],[0,ty]], paths=[[0,1,2]]);
+//        translate([pos_tx+(abs(pos_tx)/pos_tx)*tx/4,pos_ty+ty/8,pos_tz + tz/2]) cylinder(h = tz/2 ,d = d_tornillo, $fn = 100,center = true);
+//        
+//        
+//    }
 }
 
 
@@ -225,12 +243,19 @@ module barras_anti_flex(bx,by,bz,theta)
     rotate (a = [0,theta,0]) cube ([bx,by,bz], center = true);
 }
 
+module placa()
+{
+    cube([94,102,2],center=true);
+}
+
 ////////////////////// GENERACION DE LA PIEZA ////////////////////
 
-//======================CAJA==========================\\
-
-//rotate (a = [0,90,0]) difference(){
-
+////======================CAJA==========================\\
+//
+////rotate (a = [0,90,0]) 
+//difference(){
+//
+module caja(){
 union(){
 difference(){
     parte_inferior (x,y,z,dx,dy,dz,rx,ry,rz);
@@ -239,7 +264,7 @@ difference(){
     
 }
 //Soporte placa
-soporte_placa (pos_soportex1,pos_soportex2,pos_soportey1,pos_soportey2,pos_soportez);
+soporte_placa (pos_soportex1,pos_soportex2,pos_soportex3,pos_soportex4,pos_soportey1,pos_soportey2,pos_soportey3,pos_soportey4,pos_soportez);
 
 //Ayuda para tornillo
 ayuda_para_tornillo(tx,ty,tz,pos_tx,pos_ty,pos_tz);
@@ -263,27 +288,42 @@ ayuda_para_tornillo(tx,ty,tz,-pos_tx,pos_ty,pos_tz);
 }
     //translate([-ex1,0,0]) cube([x,y,z],center=true);
 //}
+//translate ([0,0,z/3]) cube([x,y,z],center = true);
 
 
+//}
+}
+module placa(){
+%translate ([0,0,-z/2 + dz + pos_tubo_z+tubo_z]) placa();
+}
 
 
 //======================TAPA==========================\\
 
-//translate ([0,-y/3,0]) union(){
-//    difference(){
-////        translate ([0,-y/3,0]) 
-//        tapa(x,y,z,dx,dy,dz);
-//        //Agujero del Arduino
-//        agujero(arduino_x,espesor_arduino*2,arduino_z,pos_arduino_x,pos_arduino_y,pos_arduino_z);
-//        //Agujero del jack de energía
-//        agujero(jack_x,espesor_jack*2,jack_z,pos_jack_x,pos_jack_y,pos_jack_z);
-//        
-//        
-//    }
-//    ayuda_para_tornillo(ttx,tty,ttz,pos_ttx,pos_tty,pos_ttz);
-//    translate([0,0,pos_bz]) rotate (a =[90,0,0]) barras_anti_flex(bx,by,bz,-theta);
-//    translate([0,0,pos_bz]) rotate (a =[-90,0,0]) barras_anti_flex(bx,by,bz,-theta);
-//    
+//difference()
+//{
+    
+module tapa_final(){   
+translate ([0,-10,0]) union(){
+    difference(){
+//        translate ([0,-y/3,0]) 
+        tapa(x,y,z,dx,dy,dz);
+        //Agujero del Arduino
+        agujero(arduino_x,espesor_arduino*2,arduino_z,pos_arduino_x,pos_arduino_y,pos_arduino_z);
+        //Agujero del jack de energía
+        agujero(jack_x,espesor_jack*2,jack_z,pos_jack_x,pos_jack_y,pos_jack_z);
+        
+        
+    }
+    ayuda_para_tornillo(ttx,tty,ttz,pos_ttx,pos_tty,pos_ttz);
+    //translate([0,0,pos_bz]) rotate (a =[90,0,0]) barras_anti_flex(bx,by,bz,-theta);
+    //translate([0,0,pos_bz]) rotate (a =[-90,0,0]) barras_anti_flex(bx,by,bz,-theta);
+    
+}
+}
+
+//translate ([0,3,0]) cube([x,y,z],center = true);
 //}
+tapa_final();
 
-
+//caja();
