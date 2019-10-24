@@ -45,9 +45,9 @@ CONTADOR_DE_PULSOS_RAM: .byte 3			;Se irán acumulando el total de pulsos medidos
 .EQU DURACION_TOTAL = 100
 
 ;CONFIGURACIÓN DEL UMBRAL
-.EQU PIN_PORTC_LED = 5
+.EQU PIN_PORTC_LED_SUP_UMBRAL = 5
 .EQU PIN_PORTC_BUZZER = 4
-
+.EQU PIN_PORTC_LED_INF_UMBRAL = 2
 
 ; PUERTO DE ACTIVACION/DESACTIVACION DEL CONTADOR
 .EQU PUERTO_ACTIVAR_CONTADOR = 4
@@ -242,7 +242,6 @@ ACUMULAR_PULSOS_DETECTADOS:
 INICIAR_MEDICION:
 
 	PUSH VENTANA_DE_TIEMPO
-	
 
 	LDS VENTANA_DE_TIEMPO, REGISTRO_VENTANA_TIEMPO		;Se carga la configuración de la duración de la ventana
 	CALL CONFIG_VENTANA_DE_TIEMPO						;Se setea la configuración del timer según lo indicado previamente por el usario
@@ -275,8 +274,10 @@ VERIFICAR_UMBRAL:
 	; sino, apagarlos y retornar
 	BRLO _ENCENDER_SENAL_VERIFICAR_UMBRAL
 
-	; Apagar LED
-	CBI PORTC, PIN_PORTC_LED
+	; Apagar LED indicador de umbral superado
+	CBI PORTC, PIN_PORTC_LED_SUP_UMBRAL
+	; Encender LED indicador de umbral NO superado
+	CBI PORTC, PIN_PORTC_LED_INF_UMBRAL
 
 	; Apagar buzzer
 	CBI PORTC, PIN_PORTC_BUZZER
@@ -284,13 +285,15 @@ VERIFICAR_UMBRAL:
 	RJMP _RET_VERIFICAR_UMBRAL
 
 _ENCENDER_SENAL_VERIFICAR_UMBRAL:
-	; Encender LED
-	SBI PORTC, PIN_PORTC_LED
+	; Encender LED indicador de umbral superado
+	SBI PORTC, PIN_PORTC_LED_SUP_UMBRAL
+	; Apagar LED indicador de umbral NO superado
+	SBI PORTC, PIN_PORTC_LED_INF_UMBRAL
 
 	; Chequear si se ha configurado el buzzer para encenderse cuando se supera el umbral
 	LDS R16, REGISTRO_CONF_GENERAL
 	SBRC R16, BIT_SENAL_SONORA
-	SBI PORTB, 3
+	SBI PORTC, 4
 
 _RET_VERIFICAR_UMBRAL:
 	POP R16

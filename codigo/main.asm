@@ -223,7 +223,18 @@ INICIO:
 	; Se habilita la escritura en ambos renglones del LCD, y se entra en el menú principal,
 	; mostrando en el segundo renglón la opción de entrar al menú de umbral.
 	LDI ESTADOS_LCD, VOLVER_MENU_PRINCIPAL
-	
+
+
+	; ====== Pines ===========	
+	; Configurar pines asociados a indicadores luminosos o sonoros como salidas
+	SBI DDRC, PIN_PORTC_LED_SUP_UMBRAL
+	SBI DDRC, PIN_PORTC_LED_INF_UMBRAL
+	SBI DDRC, PIN_PORTC_BUZZER
+
+	CBI PORTC, PIN_PORTC_LED_SUP_UMBRAL
+	SBI PORTC, PIN_PORTC_LED_INF_UMBRAL
+	CBI PORTC, PIN_PORTC_BUZZER
+
 	
 BUCLE_PRINCIPAL:
 	

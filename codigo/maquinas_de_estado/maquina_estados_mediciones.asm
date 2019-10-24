@@ -221,8 +221,9 @@ MOSTRAR_PROMEDIO:
 	SBR ESTADO, (1<<EST_OSCIOSO_MEDICION)
 
 	; Apagar LED/buzzer si es que se encuentra activado
-	CBI PORTB, PIN_PORTB_BUZZER ; Apagar buzzer
-	CBI PORTB, PIN_PORTB_LED ; Apagar LED
+	CBI PORTC, PIN_PORTC_BUZZER ; Apagar buzzer
+	CBI PORTC, PIN_PORTC_LED_SUP_UMBRAL ; Apagar LED indicador de umbral superado
+	SBI PORTC, PIN_PORTC_LED_INF_UMBRAL ; Apagar LED indicador de umbral no superado
 
 	; Enviar codigo avisando que se termino una medicion
 	LDI R18, LOW(MENSAJE_FIN_MEDICION)
@@ -245,8 +246,9 @@ _ESTADO_MEDIR_ABORTAR:
 	SBR ESTADO, (1<<EST_OSCIOSO_MEDICION)
 
 	; Apagar LED/buzzer si es que se encuentra activado
-	CBI PORTB, PIN_PORTB_BUZZER ; Apagar buzzer
-	CBI PORTB, PIN_PORTB_LED ; Apagar LED
+	CBI PORTC, PIN_PORTC_BUZZER ; Apagar buzzer
+	CBI PORTC, PIN_PORTC_LED_SUP_UMBRAL ; Apagar LED indicador de umbral superado
+	SBI PORTC, PIN_PORTC_LED_INF_UMBRAL ; Apagar LED indicador de umbral no superado
 
 	; Enviar codigo avisando que se termino una medicion
 	LDI R18, LOW(MENSAJE_FIN_MEDICION)
