@@ -34,7 +34,8 @@
 ;    0  Se ha recibido un caracter
 ;    1  Se ha terminado de recibir una cadena
 ;    2  El sistema se encuentra ocupado durante un pedido externo
-;	 3  Indica la disminucion del registro que almacena el multiplicador de ventana          
+;	 3  Indica la disminucion del registro que almacena el multiplicador de ventana
+;    4  Se ha configurado el dispositivo para que mida ventanas infinitas (es decir, que nunca pare de medir)       
 .dseg
 EVENTO2: .BYTE 1
 .cseg
@@ -54,6 +55,7 @@ EVENTO2: .BYTE 1
 .equ BIT_FIN_CADENA = 1
 .equ SISTEMA_OCUPADO = 2
 .equ BIT_MUL_VENTANA_DEC = 3
+.equ BIT_VENTANAS_INF = 4
 
 ; ESTADO: variable para identificar el estado de las maquinas de estados
 ; IMPORTANTE: cada bit, al estar activado, indica que la maquina debe estar

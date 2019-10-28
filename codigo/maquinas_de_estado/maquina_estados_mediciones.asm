@@ -141,6 +141,16 @@ _CONTINUAR_ESTADO_MEDIR_CHEQUEAR_FIN_VENTANA:
 
 	CLR CONTADOR_DE_PULSOS									;Se limpian los pulsos de la ventana anterior
 
+	; Si el contador esta configurado como para medir ventanas infinitas,
+	; entonces omitir el procedimiento para chequear si quedan o no ventanas
+	; para medir y saltar directamente a ver si el usuario pidio que se aborte
+	; la medicion
+	LDS R16, EVENTO2 ;;;;
+	SBRC R16, BIT_VENTANAS_INF ;;;;
+	RJMP NO_SE_TERMINO_VENTANA ;;;;
+
+	;ENCENDER_LED_ARDUINO
+
 	PUSH R16
 	DEC VENTANAS_A_MEDIR_LOW
 	BRNE NO_ES_CERO

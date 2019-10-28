@@ -85,6 +85,10 @@ ESTADO_RECIBIENDO_CADENA:
 
 _IR_A_ESTADO_INTERPRETAR_CADENA:
 
+	CBR R16, (1<<BIT_CARACTER_RECIBIDO)
+	CBR R16, (1<<BIT_FIN_CADENA)
+	STS EVENTO2, R16
+
 	; Limpiar el bit de evento de timer0 que corresponde a la UART
 	; Esto permite que otra funcionalidad, como el teclado, pueda usar el timer0 
 	; mediante otros eventos
@@ -93,18 +97,16 @@ _IR_A_ESTADO_INTERPRETAR_CADENA:
 	STS MOTIVO_TIMER0, R16
 
 	CALL APAGAR_TIMER_0
-
-	CBR R16, (1<<BIT_CARACTER_RECIBIDO)
-	STS EVENTO2, R16
-
-	CBR R16, (1<<BIT_CARACTER_RECIBIDO)
-	STS EVENTO2, R16
 
 	CBR ESTADO, (1<<EST_RECIBIENDO_CADENA)
 	SBR ESTADO, (1<<EST_INTERPRETANDO_CADENA) 
 	RET
 
 _IR_A_ESTADO_ERROR:
+	CBR R16, (1<<BIT_CARACTER_RECIBIDO)
+	CBR R16, (1<<BIT_FIN_CADENA)
+	STS EVENTO2, R16
+
 	; Limpiar el bit de evento de timer0 que corresponde a la UART
 	; Esto permite que otra funcionalidad, como el teclado, pueda usar el timer0 
 	; mediante otros eventos
@@ -113,9 +115,6 @@ _IR_A_ESTADO_ERROR:
 	STS MOTIVO_TIMER0, R16
 
 	CALL APAGAR_TIMER_0
-
-	CBR R16, (1<<BIT_CARACTER_RECIBIDO)
-	STS EVENTO2, R16
 
 	CBR ESTADO, (1<<EST_RECIBIENDO_CADENA)
 	SBR ESTADO, (1<<EST_ERROR_UART)

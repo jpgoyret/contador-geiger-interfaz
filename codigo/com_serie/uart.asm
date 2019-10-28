@@ -739,7 +739,7 @@ ENVIAR_DATOS_UART:
 ; Descripcion: transformar un numero binario a ASCII y enviar por UART
 ; Recibe: registros R17 y R16 con el valor de 16 bits a convertir
 ; Devulve: -
-CONVERTIR_A_BINARIO_Y_ENVIAR_UART:
+CONVERTIR_A_BINARIO_Y_ENVIAR_UART: ;;;; TODO: CAMBIAR EL NOMBRE DE ESTA FUNCION A CONVERTIR_DE_BIN_A_ASCII_Y_ENVIAR_UART
 
 	CALL IR_COMIENZO_BUFFER_TX
 
