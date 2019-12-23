@@ -235,10 +235,7 @@ Text GLabel 4000 2250 2    50   Input ~ 0
 RS
 Wire Wire Line
 	4000 2250 3700 2250
+NoConn ~ 3700 2850
 NoConn ~ 3700 2750
 NoConn ~ 3700 2050
-Text GLabel 3950 2850 2    50   Input ~ 0
-DB5
-Wire Wire Line
-	3950 2850 3700 2850
 $EndSCHEMATC
