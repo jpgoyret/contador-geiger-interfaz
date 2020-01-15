@@ -1,6 +1,5 @@
 EESchema Schematic File Version 4
-LIBS:Placa_lcd_cont_geiger-cache
-EELAYER 29 0
+EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
@@ -517,8 +516,6 @@ F 3 "" H 9150 1450 50  0000 C CNN
 	1    0    0    -1  
 $EndComp
 NoConn ~ 8950 1450
-NoConn ~ 8900 2600
-NoConn ~ 8900 2700
 NoConn ~ 8900 2800
 NoConn ~ 10550 2900
 NoConn ~ 10550 3000
@@ -562,9 +559,7 @@ F 3 "~" H 9300 3150 50  0001 C CNN
 	0    -1   -1   0   
 $EndComp
 Connection ~ 9300 3150
-Text Label 1100 5000 2    60   ~ 0
-A4
-Text Label 2700 4800 2    60   ~ 0
+Text Label 2700 4250 2    60   ~ 0
 A5
 NoConn ~ 10550 1800
 NoConn ~ 10550 1900
@@ -680,8 +675,6 @@ Text GLabel 3800 5000 3    50   Input ~ 0
 VCC
 Wire Wire Line
 	2700 4800 2800 4800
-Wire Wire Line
-	3100 4800 3350 4800
 $Comp
 L power:GND #PWR0101
 U 1 1 5D63E8E4
@@ -704,11 +697,6 @@ Wire Wire Line
 Wire Wire Line
 	3800 4300 3800 4600
 Wire Wire Line
-	3350 4250 3350 4800
-Connection ~ 3350 4800
-Wire Wire Line
-	3350 4800 3500 4800
-Wire Wire Line
 	4000 3950 4000 4100
 Wire Wire Line
 	4100 3950 4100 4350
@@ -719,4 +707,25 @@ Wire Wire Line
 Wire Wire Line
 	4200 4750 4250 4750
 Connection ~ 4250 4750
+Wire Wire Line
+	3100 4800 3500 4800
+$Comp
+L Device:R R3
+U 1 1 5E1FAAA8
+P 3000 4250
+F 0 "R3" V 2793 4250 50  0000 C CNN
+F 1 "10k" V 2884 4250 50  0000 C CNN
+F 2 "Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" V 2930 4250 50  0001 C CNN
+F 3 "~" H 3000 4250 50  0001 C CNN
+	1    3000 4250
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	3350 4250 3150 4250
+Text Label 2700 4800 2    60   ~ 0
+A2
+Text Label 1100 5000 2    60   ~ 0
+A1
+Wire Wire Line
+	2850 4250 2700 4250
 $EndSCHEMATC
